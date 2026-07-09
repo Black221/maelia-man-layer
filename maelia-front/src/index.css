@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+/* =====================================================================
+   MAELIA — Design System tokens (ui-ux-specifications.md §2)
+   Définition via @theme Tailwind v4 + variables CSS globales.
+   ===================================================================== */
+
+@theme {
+  /* --- Polices --- */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* --- Couleurs neutres (slate) --- */
+  --color-neutral-50:  #F8FAFC;
+  --color-neutral-100: #F1F5F9;
+  --color-neutral-200: #E2E8F0;
+  --color-neutral-300: #CBD5E1;
+  --color-neutral-400: #94A3B8;
+  --color-neutral-500: #64748B;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1E293B;
+  --color-neutral-900: #0F172A;
+
+  /* --- Couleur primaire (eau / teal) --- */
+  --color-primary-50:  #ECFEFF;
+  --color-primary-100: #CFFAFE;
+  --color-primary-200: #A5F0F5;
+  --color-primary-300: #67E0E8;
+  --color-primary-400: #2DC4D1;
+  --color-primary-500: #0E9CA8;
+  --color-primary-600: #0E7C86;
+  --color-primary-700: #115E67;
+  --color-primary-800: #134E55;
+  --color-primary-900: #134048;
+
+  /* --- Couleurs sémantiques --- */
+  --color-success: #16A34A;
+  --color-warning: #D97706;
+  --color-danger:  #DC2626;
+  --color-info:    #2563EB;
+
+  /* --- Alias courts (primary → primary-600) --- */
+  --color-primary: var(--color-primary-600);
+
+  /* --- Animation barre indéterminée --- */
+  --animate-progress-indeterminate: progress-indeterminate 1.4s ease-in-out infinite;
+
+  /* --- Rayons --- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* --- Ombres subtiles --- */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.12);
+
+  /* --- Espacement (base 4px) --- */
+  --spacing-0: 0;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+}
+
+/* --- Variables CSS globales pour le thème (accès hors Tailwind) --- */
+:root {
+  --bg-base:        var(--color-neutral-50);
+  --bg-surface:     #ffffff;
+  --border-color:   var(--color-neutral-200);
+  --text-primary:   var(--color-neutral-900);
+  --text-secondary: var(--color-neutral-500);
+  --action:         var(--color-primary-600);
+  --action-hover:   var(--color-primary-700);
+}
+
+/* --- Base globale --- */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--text-primary);
+  background-color: var(--bg-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-variant-numeric: tabular-nums;
+}
+
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Scrollbar fine */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-neutral-300); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-neutral-400); }
+
+/* Barre de progression indéterminée */
+@keyframes progress-indeterminate {
+  0%   { transform: translateX(-100%); }
+  60%  { transform: translateX(250%); }
+  100% { transform: translateX(250%); }
+}

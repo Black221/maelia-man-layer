@@ -1,0 +1,32 @@
+# backend/Dockerfile — Spring Boot (Java 21), build multi-stage
+# Le même artefact sert l'API et le worker (différenciés par SPRING_PROFILES_ACTIVE).
+
+# --- Étape 1 : build ---
+FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /app
+
+# Cache des dépendances : copier d'abord le(s) pom puis résoudre hors-ligne
+COPY pom.xml .
+# Pour un projet multi-module, copier aussi les pom des modules ici, ex. :
+# COPY shared/pom.xml shared/
+# COPY catalog/pom.xml catalog/
+RUN mvn -q -B dependency:go-offline
+
+# Copier les sources et construire
+COPY . .
+RUN mvn -q -B -DskipTests package
+
+# --- Étape 2 : runtime ---
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+
+# Utilisateur non-root
+RUN addgroup -S maelia && adduser -S maelia -G maelia
+USER maelia
+
+# Récupérer le jar exécutable (adapter le chemin si multi-module)
+COPY --from=build /app/target/*.jar app.jar
+
+EXPOSE 8080
+ENV JAVA_OPTS=""
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

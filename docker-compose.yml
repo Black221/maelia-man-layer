@@ -1,0 +1,139 @@
+# docker-compose.yml — Plateforme MAELIA
+# Démarrage : docker compose build && docker compose up -d
+# Le modèle MAELIA (.gaml + includes) doit être placé dans ./gama-workspace (monté dans gama ET worker).
+
+services:
+
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: maelia
+      POSTGRES_USER: maelia
+      POSTGRES_PASSWORD: maelia
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U maelia -d maelia"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    environment:
+      RABBITMQ_DEFAULT_USER: maelia
+      RABBITMQ_DEFAULT_PASS: maelia
+    ports:
+      - "5672:5672"
+      - "15672:15672"   # console de gestion
+    volumes:
+      # Relève consumer_timeout pour les runs longs (cf. fichier pour le détail).
+      - ./rabbitmq/conf.d/20-consumer-timeout.conf:/etc/rabbitmq/conf.d/20-consumer-timeout.conf:ro
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: maelia
+      MINIO_ROOT_PASSWORD: maelia12345
+    ports:
+      - "9000:9000"
+      - "9001:9001"   # console
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  gama-headless:
+    image: maelia-man-layer-gama-headless
+    # Serveur headless GAMA en mode WebSocket sur le port 6868.
+    # L'image maelia-man-layer-gama-headless est une image Alpine+JDK21+GAMA buildée localement.
+    # Pour rebuild : placer un Dockerfile dans gama-headless/ et relancer docker compose build gama-headless.
+    command: ["-socket", "6868"]
+    ports:
+      - "6868:6868"
+    volumes:
+      # gama-workspace/ contient maelia/ (models + includes) et projects/ (includes matérialisés).
+      # /workspace est le WORKDIR de l'image GAMA (le launcher y crée son workspace Eclipse
+      # .workspace*) : le modèle est accessible à /workspace/maelia/... — même chemin vu par
+      # l'api et le worker (GAMA_WORKSPACE), donc un seul référentiel de chemins partout.
+      - ./gama-workspace:/workspace
+
+  api:
+    build:
+      context: ./maelia-server
+      dockerfile: Dockerfile
+    image: maelia/backend:local
+    environment:
+      SPRING_PROFILES_ACTIVE: api
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/maelia
+      SPRING_DATASOURCE_USERNAME: maelia
+      SPRING_DATASOURCE_PASSWORD: maelia
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_USERNAME: maelia
+      SPRING_RABBITMQ_PASSWORD: maelia
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: maelia
+      MINIO_SECRET_KEY: maelia12345
+      GAMA_WS_URL: ws://gama-headless:6868
+      # L'API matérialise les includes (au lancement d'un run) et sert les artefacts de
+      # sortie : elle doit voir le même volume gama-workspace que le worker et GAMA.
+      GAMA_WORKSPACE: /workspace
+    volumes:
+      - ./gama-workspace:/workspace
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  worker:
+    # Même image que l'api, lancée avec le profil "worker" (consomme RabbitMQ, pilote GAMA).
+    image: maelia/backend:local
+    environment:
+      SPRING_PROFILES_ACTIVE: worker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/maelia
+      SPRING_DATASOURCE_USERNAME: maelia
+      SPRING_DATASOURCE_PASSWORD: maelia
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_USERNAME: maelia
+      SPRING_RABBITMQ_PASSWORD: maelia
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: maelia
+      MINIO_SECRET_KEY: maelia12345
+      GAMA_WS_URL: ws://gama-headless:6868
+      # Le worker matérialise les includes dans ce répertoire (partagé avec GAMA via volume).
+      GAMA_WORKSPACE: /workspace
+    volumes:
+      - ./gama-workspace:/workspace
+    depends_on:
+      - api
+      - gama-headless
+
+  frontend:
+    build:
+      context: ./maelia-front
+      dockerfile: Dockerfile
+    image: maelia/frontend:local
+    ports:
+      - "8081:80"
+    depends_on:
+      - api
+
+volumes:
+  db-data:
+  minio-data:

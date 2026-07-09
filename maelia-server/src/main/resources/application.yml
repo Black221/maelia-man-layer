@@ -1,0 +1,231 @@
+# backend/src/main/resources/application.yml
+# Configuration Spring Boot de la plateforme MAELIA.
+# Un seul fichier multi-documents : section de base + profils (api, worker, dev).
+# Les valeurs par defaut conviennent a un run local ; en conteneur, elles sont
+# surchargees par les variables d'environnement definies dans docker-compose.yml.
+# Profil actif : variable SPRING_PROFILES_ACTIVE (api | worker | dev).
+
+spring:
+  application:
+    name: maelia-platform
+
+  # --- Base de donnees (PostgreSQL + PostGIS) ---
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/maelia}
+    username: ${SPRING_DATASOURCE_USERNAME:maelia}
+    password: ${SPRING_DATASOURCE_PASSWORD:maelia}
+    hikari:
+      maximum-pool-size: 10
+      pool-name: maelia-pool
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      # none en M0 (pas d'entites JPA encore) ; passer a validate quand les entites existent.
+      ddl-auto: none
+    properties:
+      hibernate:
+        # Hibernate 6 : le dialecte PostgreSQL prend en charge le spatial
+        # des lors que hibernate-spatial est present dans le classpath.
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: UTC
+          batch_size: 50
+        format_sql: false
+
+  # --- Migrations de schema + seed du catalogue DataSpec ---
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  # --- Messagerie (RabbitMQ) : file des runs de simulation ---
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:maelia}
+    password: ${SPRING_RABBITMQ_PASSWORD:maelia}
+
+  # --- Upload de fichiers (CSV / SHP zippes, parfois volumineux) ---
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+
+# --- Stockage objet (MinIO / S3) : fichiers uploades et sorties brutes ---
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:maelia}
+  secret-key: ${MINIO_SECRET_KEY:maelia12345}
+  bucket: ${MINIO_BUCKET:maelia}
+
+# --- Passerelle GAMA (serveur headless WebSocket) ---
+gama:
+  ws-url: ${GAMA_WS_URL:ws://localhost:6868}
+  # Repertoire (volume partage worker <-> conteneur gama) ou le worker
+  # materialise l'arborescence includes et ou GAMA ecrit ses sorties.
+  workspace: ${GAMA_WORKSPACE:./gama-workspace}
+  # Socle d'includes copie au debut de CHAQUE materialisation de projet : l'ensemble
+  # complet des fichiers a fournir (CSV + SHP). Les datasets saisis/modifies par
+  # l'utilisateur ecrasent ensuite les fichiers correspondants. Vide = desactive.
+  base-includes: ${GAMA_BASE_INCLUDES:${gama.workspace:./gama-workspace}/maelia/includes}
+  # Prefixe des chemins ENVOYES a GAMA (tel que vu DANS le conteneur gama-headless).
+  # /workspace est le WORKDIR de l'image GAMA, ou docker-compose monte ./gama-workspace.
+  workspace-mount: ${GAMA_WORKSPACE_MOUNT:/workspace}
+  # Mode de transfert des fichiers vers GAMA : SHARED_VOLUME (recommande) ou SOCKET.
+  transfer-mode: ${GAMA_TRANSFER_MODE:SHARED_VOLUME}
+  # Delai max d'attente d'une commande GAMA courte (load/expression) avant abandon.
+  command-timeout-seconds: ${GAMA_COMMAND_TIMEOUT:120}
+  # Delai max d'une SIMULATION complete (distinct du command-timeout). Filet de securite
+  # contre un run reellement bloque (silencieux) : au-dela, le run est marque en echec et la
+  # session GAMA fermee, ce qui libere le consommateur. Les erreurs d'init / fins normales sont
+  # detectees immediatement via la console (cf. GamaServerSession), sans attendre ce delai.
+  # Augmenter via GAMA_RUN_TIMEOUT pour de longs runs MAELIA multi-annees en production.
+  run-timeout-seconds: ${GAMA_RUN_TIMEOUT:1800}
+
+# --- Configuration applicative MAELIA ---
+maelia:
+  # Noms des objets RabbitMQ (file/echange/clef) pour les runs.
+  messaging:
+    run-exchange: maelia.runs
+    run-queue: maelia.runs.queue
+    run-routing-key: run.launch
+    # Échange fanout des mises à jour de progression (worker -> API -> STOMP)
+    run-updates-exchange: maelia.run.updates
+  simulation:
+    # Duree de conservation des repertoires de travail bruts d'un run (heures).
+    output-retention-hours: 72
+    # Launcher des runs de projet (scenarios) : copie de launcherTest.gaml dont les defauts
+    # sont valides par le smoke test sur l'echantillon SASSEME (scenario minimal par defaut).
+    # launcherBase.gaml (simulationBase) reste disponible mais ses defauts (territoire
+    # 'terrainTest', climat rcp8.5, blocs output/display) ne conviennent pas au headless.
+    default-model-path: ${GAMA_DEFAULT_MODEL:/workspace/maelia/models/main/launcherProjet.gaml}
+    default-experiment: ${GAMA_DEFAULT_EXPERIMENT:simulationProjet}
+    # Condition d'arret par defaut pour les runs generiques (vide = arret manuel/maxCycles).
+    default-until: ${GAMA_DEFAULT_UNTIL:}
+    # Modele de TEST autonome (independant de MAELIA) : POST /api/v1/dev/runs/test.
+    # Sert a valider la chaine front <-> back <-> GAMA sans donnees d'entree.
+    test-model-path: ${GAMA_TEST_MODEL:/workspace/test/models/simple_test.gaml}
+    test-experiment: ${GAMA_TEST_EXPERIMENT:test_simulation}
+    test-until: ${GAMA_TEST_UNTIL:sim_termine}
+    # Launcher de TEST du VRAI modele MAELIA (includes de base SASSEME) : POST /api/v1/dev/runs/maelia-test.
+    # Valide la chaine de bout en bout avec MAELIA reel sans passer par la gestion de projet.
+    maelia-test-model-path: ${GAMA_MAELIA_TEST_MODEL:/workspace/maelia/models/main/launcherTest.gaml}
+    maelia-test-experiment: ${GAMA_MAELIA_TEST_EXPERIMENT:test_maelia}
+    maelia-test-until: ${GAMA_MAELIA_TEST_UNTIL:simulationTerminee}
+  catalog:
+    # Seed du catalogue DataSpec charge au demarrage.
+    # maelia-database.json : catalogue complet (71 types) derive de l'Excel + grounding
+    # sur l'echantillon SASSEME V1. dataspec-seed-maelia.json reste disponible (ancien seed cure).
+    seed-location: ${MAELIA_CATALOG_SEED:classpath:catalog/maelia-database.json}
+  # Securite desactivee jusqu'au jalon M7 (gestion des utilisateurs en dernier).
+  security:
+    enabled: ${MAELIA_SECURITY_ENABLED:false}
+
+# --- Actuator / observabilite ---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+
+# --- Documentation API (springdoc / Swagger) ---
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+# --- Journalisation ---
+logging:
+  # Traçage des runs : le runId/projectId (posés dans le MDC par RunWorker) apparaissent dans chaque ligne.
+  pattern:
+    level: "%5p [run=%X{runId:-} proj=%X{projectId:-}]"
+  level:
+    root: INFO
+    sn.lhacksrt: DEBUG
+    org.hibernate.SQL: INFO
+
+---
+# =========================================================================
+# Profil API : expose l'API REST + le WebSocket STOMP (pas de listener AMQP)
+# =========================================================================
+spring:
+  config:
+    activate:
+      on-profile: api
+  main:
+    web-application-type: servlet
+  # L'API ne consomme PAS la file des runs (réservée au worker via @Profile("worker")),
+  # mais elle consomme la file fanout des mises à jour pour les relayer en STOMP
+  # (RunUpdateRelay). Les listeners doivent donc démarrer : on laisse auto-startup par défaut.
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  # Le front appelle /api/... : prefixe applique au niveau des controleurs
+  # (annotation @RequestMapping("/api/v1")) plutot qu'ici, pour laisser /actuator libre.
+
+---
+# =========================================================================
+# Profil WORKER : consomme la file des runs et pilote GAMA (pas de serveur web)
+# =========================================================================
+spring:
+  config:
+    activate:
+      on-profile: worker
+  main:
+    web-application-type: none
+  rabbitmq:
+    listener:
+      simple:
+        auto-startup: true
+        # Un run = une connexion WebSocket persistante vers GAMA maintenue pendant toute son
+        # execution. On demarre avec 2 consommateurs pour qu'un run bloque n'empeche pas d'en
+        # lancer un nouveau (sinon, avec 1 seul consommateur, tout est fige jusqu'au timeout).
+        concurrency: 2
+        max-concurrency: 4
+        prefetch: 1
+
+---
+# =========================================================================
+# Profil DEV : confort de developpement local
+# =========================================================================
+spring:
+  config:
+    activate:
+      on-profile: dev
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+
+---
+# =========================================================================
+# Profil TEST : desactive l'infra (DB, AMQP, MinIO) pour les tests unitaires
+# =========================================================================
+spring:
+  config:
+    activate:
+      on-profile: test
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+  main:
+    web-application-type: servlet
