@@ -42,6 +42,10 @@ public class RunWorker {
     @Value("${gama.run-timeout-seconds:7200}")
     private long runTimeoutSeconds;
 
+    /** Intervalle de sondage de fin de simulation (variable simulationTerminee). */
+    @Value("${gama.end-poll-seconds:10}")
+    private long endPollSeconds;
+
     @Value("${maelia.messaging.run-updates-exchange:maelia.run.updates}")
     private String runUpdatesExchange;
 
@@ -111,7 +115,7 @@ public class RunWorker {
 
             try {
                 session.play(expId);
-                session.waitForEnd(runTimeoutSeconds);
+                awaitSimulationEnd(session, expId, runId);
             } catch (Exception ex) {
                 // Nettoyage côté GAMA avant de propager (annulation/timeout)
                 try { session.stop(expId); } catch (Exception ignored) {}
@@ -143,6 +147,35 @@ public class RunWorker {
         }
     }
 
+    /**
+     * Attend la fin de la simulation. GAMA peut terminer SANS émettre d'événement serveur : le
+     * modèle MAELIA fait {@code do pause} en fin de run (l'expérience reste pausée mais vivante).
+     * En plus d'écouter les signaux (console « FIN DE SIMULATION », messages de fin/erreur,
+     * fermeture de connexion — via {@code awaitEnd}), on SONDE la variable globale
+     * {@code simulationTerminee} du modèle, posée à {@code true} à la fin. Sans ce sondage, un run
+     * pourtant terminé restait « EN_COURS » jusqu'au timeout.
+     */
+    private void awaitSimulationEnd(GamaSession session, String expId, UUID runId) throws Exception {
+        long pollSeconds = Math.max(2, Math.min(endPollSeconds, runTimeoutSeconds));
+        long deadlineNanos = System.nanoTime() + runTimeoutSeconds * 1_000_000_000L;
+        while (true) {
+            if (session.awaitEnd(pollSeconds)) return; // fin par signal (peut lever en cas d'erreur/crash)
+            if (System.nanoTime() >= deadlineNanos) {
+                throw new IllegalStateException("GAMA simulation timed out after " + runTimeoutSeconds + "s");
+            }
+            // Fallback robuste : sonder la variable de fin du modèle (best-effort).
+            try {
+                String v = session.evaluate(expId, "simulationTerminee");
+                if (v != null && v.trim().toLowerCase().startsWith("true")) {
+                    log.info("Run {} : fin détectée via simulationTerminee=true", runId);
+                    return;
+                }
+            } catch (Exception e) {
+                log.debug("Run {} : sondage simulationTerminee ignoré ({})", runId, e.getMessage());
+            }
+        }
+    }
+
     private void forwardGamaMessage(UUID runId, String raw,
                                     java.util.concurrent.atomic.AtomicInteger lastCycle) {
         GamaMessage msg = messageParser.parse(raw);
@@ -164,6 +197,8 @@ public class RunWorker {
             }
             case GamaMessage.SimulationEnded se -> publish(runId, "ENDED", 0, null, null);
             case GamaMessage.SimulationError se -> publish(runId, "ERROR", 0, se.content(), se.content());
+            // Statut d'expérience passé en ERREUR : remonte comme erreur (le run sera marqué ECHEC).
+            case GamaMessage.StatusError se -> publish(runId, "ERROR", 0, se.content(), se.content());
             default -> { /* ignoré */ }
         }
     }

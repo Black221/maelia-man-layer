@@ -34,5 +34,6 @@ export const queryKeys = {
     all: (projectId: string) => ['runs', projectId] as const,
     detail: (id: string) => ['runs', id] as const,
     results: (id: string) => ['runs', id, 'results'] as const,
+    dashboard: (id: string) => ['runs', id, 'dashboard'] as const,
   },
 } as const

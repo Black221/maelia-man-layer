@@ -7,6 +7,7 @@ import sn.lhacksrt.maeliaserver.dataset.api.dto.DatasetFileDto;
 import sn.lhacksrt.maeliaserver.dataset.api.dto.DatasetResponse;
 import sn.lhacksrt.maeliaserver.dataset.api.dto.ValidationReportDto;
 import sn.lhacksrt.maeliaserver.dataset.application.materializer.IncludesMaterializer;
+import sn.lhacksrt.maeliaserver.dataset.application.referential.ReferentialOptionsService;
 import sn.lhacksrt.maeliaserver.dataset.application.service.BulkImportService;
 import sn.lhacksrt.maeliaserver.dataset.application.service.DatasetService;
 import sn.lhacksrt.maeliaserver.dataset.application.service.ShpUploadService;
@@ -23,13 +24,16 @@ public class DatasetController {
     private final ShpUploadService shpUpload;
     private final BulkImportService bulkImport;
     private final IncludesMaterializer materializer;
+    private final ReferentialOptionsService referentialOptions;
 
     public DatasetController(DatasetService service, ShpUploadService shpUpload,
-                             BulkImportService bulkImport, IncludesMaterializer materializer) {
+                             BulkImportService bulkImport, IncludesMaterializer materializer,
+                             ReferentialOptionsService referentialOptions) {
         this.service = service;
         this.shpUpload = shpUpload;
         this.bulkImport = bulkImport;
         this.materializer = materializer;
+        this.referentialOptions = referentialOptions;
     }
 
     /** Liste les datasets d'un projet (sans les enregistrements). */
@@ -111,6 +115,21 @@ public class DatasetController {
             @PathVariable UUID projectId,
             @RequestParam("file") MultipartFile file) throws Exception {
         return bulkImport.importZip(projectId, file);
+    }
+
+    /**
+     * Valeurs proposées pour un sélecteur de paramètre de scénario (« select depuis données »).
+     * Lit la colonne demandée d'un DataSpec dans les données saisies du projet, sinon dans le
+     * socle — donc opérationnel même sans upload. {@code column} vide = 1er champ (ID) ;
+     * {@code source} = COLUMN (défaut) | COLUMN_HEADERS | INSTANCE_KEYS.
+     */
+    @GetMapping("/projects/{projectId}/referential-options")
+    public List<String> referentialOptions(
+            @PathVariable UUID projectId,
+            @RequestParam("dataSpec") String dataSpecId,
+            @RequestParam(value = "column", required = false) String column,
+            @RequestParam(value = "source", required = false) String source) {
+        return referentialOptions.options(projectId, dataSpecId, column, source);
     }
 
     /** Lance la validation, retourne le rapport. */

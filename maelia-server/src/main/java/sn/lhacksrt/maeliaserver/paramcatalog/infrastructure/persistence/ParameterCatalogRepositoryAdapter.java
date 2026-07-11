@@ -76,7 +76,7 @@ public class ParameterCatalogRepositoryAdapter implements ParameterCatalogReposi
                 ? null : String.join("|", s.allowedValues());
         return new ParameterSpecJpaEntity(s.gamlName(), s.label(), s.group(), s.type().name(),
                 s.defaultValue(), s.unit(), allowed, s.visibleIf(), s.enabledIf(),
-                s.optionsDataSpec(), s.advanced(), s.sortOrder());
+                s.optionsDataSpec(), s.optionsColumn(), s.optionsSource(), s.advanced(), s.sortOrder());
     }
 
     private ParameterSpec toDomain(ParameterSpecJpaEntity e) {
@@ -85,6 +85,6 @@ public class ParameterCatalogRepositoryAdapter implements ParameterCatalogReposi
         return new ParameterSpec(e.getGamlName(), e.getLabel(), e.getGroupId(),
                 ParamType.fromString(e.getType()), e.getDefaultValue(), e.getUnit(),
                 allowed, e.getVisibleIf(), e.getEnabledIf(), e.getOptionsDataSpec(),
-                e.isAdvanced(), e.getSortOrder());
+                e.getOptionsColumn(), e.getOptionsSource(), e.isAdvanced(), e.getSortOrder());
     }
 }

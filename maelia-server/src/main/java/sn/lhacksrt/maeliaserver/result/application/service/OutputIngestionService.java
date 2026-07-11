@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import sn.lhacksrt.maeliaserver.result.application.ingestion.CsvSeriesParser;
+import sn.lhacksrt.maeliaserver.result.application.ingestion.OutputFileIngestor;
 import sn.lhacksrt.maeliaserver.result.domain.model.ArtifactType;
 import sn.lhacksrt.maeliaserver.result.domain.model.OutputArtifact;
 import sn.lhacksrt.maeliaserver.result.domain.model.ResultValue;
@@ -34,10 +35,13 @@ public class OutputIngestionService implements IngestOutputsUseCase {
 
     private final ResultRepository repository;
     private final ArtifactStorage storage;
+    private final List<OutputFileIngestor> ingestors;
 
-    public OutputIngestionService(ResultRepository repository, ArtifactStorage storage) {
+    public OutputIngestionService(ResultRepository repository, ArtifactStorage storage,
+                                  List<OutputFileIngestor> ingestors) {
         this.repository = repository;
         this.storage = storage;
+        this.ingestors = ingestors;
     }
 
     @Override
@@ -65,7 +69,7 @@ public class OutputIngestionService implements IngestOutputsUseCase {
                     artifacts.add(OutputArtifact.create(runId, name, type, contentType(name), rel, size));
 
                     if (type == ArtifactType.CSV) {
-                        values.addAll(parseCsvStreaming(runId, f));
+                        values.addAll(parseCsvStreaming(runId, f, name));
                     }
                 } catch (Exception e) {
                     log.warn("Fichier de sortie ignoré ({}): {}", f, e.getMessage());
@@ -81,13 +85,18 @@ public class OutputIngestionService implements IngestOutputsUseCase {
         return values.size();
     }
 
-    /** Lit le CSV en flux (UTF-8, repli ISO-8859-1) sans charger tout le fichier en mémoire. */
-    private static List<ResultValue> parseCsvStreaming(UUID runId, Path file) throws IOException {
+    /**
+     * Lit le CSV en flux (UTF-8, repli ISO-8859-1). Dispatche vers l'ingestor MAELIA-aware qui
+     * connaît le fichier (dimensions culture/année) ; sinon le parseur générique (fallback).
+     */
+    private List<ResultValue> parseCsvStreaming(UUID runId, Path file, String name) throws IOException {
+        OutputFileIngestor ingestor = ingestors.stream()
+                .filter(i -> i.supports(name)).findFirst().orElse(null);
         try (Reader r = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-            return CsvSeriesParser.parse(runId, r);
+            return ingestor != null ? ingestor.parse(runId, r, name) : CsvSeriesParser.parse(runId, r);
         } catch (MalformedInputException mie) {
             try (Reader r = Files.newBufferedReader(file, StandardCharsets.ISO_8859_1)) {
-                return CsvSeriesParser.parse(runId, r);
+                return ingestor != null ? ingestor.parse(runId, r, name) : CsvSeriesParser.parse(runId, r);
             }
         }
     }

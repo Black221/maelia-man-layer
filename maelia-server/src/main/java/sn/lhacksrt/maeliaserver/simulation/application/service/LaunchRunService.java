@@ -10,6 +10,7 @@ import sn.lhacksrt.maeliaserver.project.domain.port.out.ProjectRepository;
 import sn.lhacksrt.maeliaserver.scenario.application.service.GamaParameterBuilder;
 import sn.lhacksrt.maeliaserver.scenario.domain.model.Scenario;
 import sn.lhacksrt.maeliaserver.scenario.domain.port.out.ScenarioRepository;
+import sn.lhacksrt.maeliaserver.simulation.domain.model.RunStatus;
 import sn.lhacksrt.maeliaserver.simulation.domain.model.SimulationRun;
 import sn.lhacksrt.maeliaserver.simulation.domain.port.in.LaunchRunUseCase;
 import sn.lhacksrt.maeliaserver.simulation.domain.port.out.SimulationRunRepository;
@@ -80,6 +81,18 @@ public class LaunchRunService implements LaunchRunUseCase {
                 .orElseThrow(() -> new IllegalArgumentException("Project not found: " + projectId));
         Scenario scenario = scenarioRepository.findById(scenarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Scenario not found: " + scenarioId));
+
+        // Garde-fou : un seul run actif (EN_FILE/EN_COURS) par projet à la fois. Deux runs
+        // simultanés du même projet écriraient en concurrence dans projects/{id}/includes/
+        // (matérialisation partagée) — risque de fichier lu à moitié réécrit à l'init GAMA.
+        // IllegalStateException -> HTTP 409 Conflict (cf. GlobalExceptionHandler).
+        boolean active = repository.findByProject(projectId).stream()
+                .anyMatch(r -> r.getStatus() == RunStatus.EN_FILE || r.getStatus() == RunStatus.EN_COURS);
+        if (active) {
+            throw new IllegalStateException(
+                    "Une simulation est déjà en cours ou en file d'attente pour ce projet. "
+                            + "Attendez sa fin avant d'en lancer une autre (les includes du projet sont partagés).");
+        }
 
         // Bloquant : un run lancé sans includes matérialisés échouerait silencieusement côté GAMA
         // (cheminModeleVersDonnees pointant vers un répertoire absent).

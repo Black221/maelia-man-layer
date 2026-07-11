@@ -78,6 +78,22 @@ export function ScenarioList({ projectId }: ScenarioListProps) {
         </Button>
       </div>
 
+      {/* Erreur de lancement (ex. 409 : une simulation est déjà en cours pour ce projet) */}
+      {launchMutation.isError && (
+        <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[13px] text-amber-800">
+          <span className="flex-1">
+            {(launchMutation.error as { detail?: string })?.detail ?? 'Impossible de lancer la simulation.'}
+          </span>
+          <button
+            onClick={() => launchMutation.reset()}
+            className="shrink-0 text-amber-500 hover:text-amber-700"
+            aria-label="Fermer"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       {/* Liste des scénarios */}
       {hasScenarios ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">

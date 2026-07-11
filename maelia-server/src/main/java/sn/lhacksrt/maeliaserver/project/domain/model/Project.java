@@ -30,7 +30,7 @@ public class Project {
     public static Project create(String name, String description) {
         Instant now = Instant.now();
         return new Project(
-                UUID.randomUUID(), name, description, "garonne-amont",
+                UUID.randomUUID(), name, description, "ferlo-sine",
                 ModelingConfiguration.defaults(), ProjectStatus.ACTIF, now, now
         );
     }

@@ -28,7 +28,7 @@ public class ProjectJpaEntity {
     private String description;
 
     @Column(name = "study_area", nullable = false)
-    private String studyArea = "garonne-amont";
+    private String studyArea = "ferlo-sine";
 
     @Type(JsonType.class)
     @Column(name = "modeling_configuration", columnDefinition = "jsonb")

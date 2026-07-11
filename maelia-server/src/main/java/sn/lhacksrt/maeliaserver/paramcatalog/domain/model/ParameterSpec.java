@@ -25,6 +25,13 @@ public record ParameterSpec(
         /** Id d'un DataSpec dont le dataset projet alimente les valeurs proposées (select issu
          *  des données ; valeurs distinctes du champ clé, comme les sélecteurs référentiels). */
         String optionsDataSpec,
+        /** Colonne (label de champ) du DataSpec dont on propose les valeurs. Null = 1er champ.
+         *  Permet de proposer autre chose que l'ID (ex. un nom, un type de sol ZONE_PEDO…). */
+        String optionsColumn,
+        /** Source des valeurs proposées : {@code COLUMN} (défaut, valeurs distinctes d'une colonne),
+         *  {@code COLUMN_HEADERS} (noms de colonnes, hors 1re — ex. cultures d'especesCultivees),
+         *  {@code INSTANCE_KEYS} (clés d'instance d'un DataSpec multi-instance — ex. prixVentesXX). */
+        String optionsSource,
         boolean advanced,
         int sortOrder
 ) {}

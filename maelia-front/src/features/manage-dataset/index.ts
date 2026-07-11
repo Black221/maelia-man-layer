@@ -1,5 +1,6 @@
 export { DatasetGrid } from './ui/DatasetGrid'
 export { DatasetUpload } from './ui/DatasetUpload'
 export { ShpUpload } from './ui/ShpUpload'
-export { useReferentialOptions } from './model/useReferentialOptions'
+export { useReferentialOptions, useParamOptions } from './model/useReferentialOptions'
+export type { OptionSpec } from './model/useReferentialOptions'
 export * from './api/dataset.api'

@@ -29,3 +29,34 @@ export interface ResultSummary {
   yearly: ResultSeries[]
   artifacts: OutputArtifact[]
 }
+
+// --- Tableau de bord agronomique (séries indicateur × culture au cours du temps) ---
+
+export interface IndicatorMeta {
+  indicator: string
+  unit: string | null
+  categories: string[]
+  years: number[]
+}
+
+export interface YearPoint {
+  year: number
+  /** Moyenne de l'indicateur (ex. rendement t/ha). */
+  mean: number
+  /** Somme pondérée par la surface (ex. production t) si indicateur surfacique, sinon null. */
+  total: number | null
+  count: number
+}
+
+export interface AggSeries {
+  indicator: string
+  category: string | null
+  unit: string | null
+  points: YearPoint[]
+}
+
+export interface RunDashboard {
+  runId: string
+  indicators: IndicatorMeta[]
+  series: AggSeries[]
+}

@@ -1,4 +1,7 @@
 export { ResultDashboard } from './ui/ResultDashboard'
 export { TimeSeriesChart } from './ui/TimeSeriesChart'
 export { ArtifactGallery } from './ui/ArtifactGallery'
-export { getRunResults, artifactHref } from './api/result.api'
+export { AgriDashboard } from './ui/AgriDashboard'
+export type { SelectedRun } from './ui/AgriDashboard'
+export { MultiLineChart, colorAt } from './ui/MultiLineChart'
+export { getRunResults, getRunDashboard, artifactHref } from './api/result.api'

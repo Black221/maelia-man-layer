@@ -37,6 +37,12 @@ public class ParameterSpecJpaEntity {
     @Column(name = "options_data_spec", length = 120)
     private String optionsDataSpec;
 
+    @Column(name = "options_column", length = 120)
+    private String optionsColumn;
+
+    @Column(name = "options_source", length = 20)
+    private String optionsSource;
+
     @Column(nullable = false)
     private boolean advanced;
 
@@ -48,6 +54,7 @@ public class ParameterSpecJpaEntity {
     public ParameterSpecJpaEntity(String gamlName, String label, String groupId, String type,
                                   String defaultValue, String unit, String allowedValues,
                                   String visibleIf, String enabledIf, String optionsDataSpec,
+                                  String optionsColumn, String optionsSource,
                                   boolean advanced, int sortOrder) {
         this.gamlName = gamlName;
         this.label = label;
@@ -59,6 +66,8 @@ public class ParameterSpecJpaEntity {
         this.visibleIf = visibleIf;
         this.enabledIf = enabledIf;
         this.optionsDataSpec = optionsDataSpec;
+        this.optionsColumn = optionsColumn;
+        this.optionsSource = optionsSource;
         this.advanced = advanced;
         this.sortOrder = sortOrder;
     }
@@ -73,6 +82,8 @@ public class ParameterSpecJpaEntity {
     public String getVisibleIf()       { return visibleIf; }
     public String getEnabledIf()       { return enabledIf; }
     public String getOptionsDataSpec() { return optionsDataSpec; }
+    public String getOptionsColumn()   { return optionsColumn; }
+    public String getOptionsSource()   { return optionsSource; }
     public boolean isAdvanced()        { return advanced; }
     public int getSortOrder()          { return sortOrder; }
 }

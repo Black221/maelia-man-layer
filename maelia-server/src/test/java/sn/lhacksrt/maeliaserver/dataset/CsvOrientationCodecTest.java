@@ -128,6 +128,28 @@ class CsvOrientationCodecTest {
         assertEquals("a1", back.get(0).get("ID"));
     }
 
+    @Test
+    void transposedWritePreservesUndeclaredRows() throws Exception {
+        // Régression Engrais : le catalogue déclare NOM + C, mais les données portent une ligne
+        // supplémentaire non déclarée (plan_epandage). La réécriture NE DOIT PAS la perdre
+        // (sinon la matrice se décale et GAMA crashe à l'init : Index out of bounds).
+        DataSpec ds = spec(Orientation.FIELDS_AS_ROWS, "COLUMN_HEADER",
+                List.of(field("nom", 0), field("C", 1)));
+        java.util.Map<String, Object> e1 = new java.util.LinkedHashMap<>();
+        e1.put("nom", "fumier"); e1.put("C", "7.5"); e1.put("plan_epandage", "false");
+        java.util.Map<String, Object> e2 = new java.util.LinkedHashMap<>();
+        e2.put("nom", "urea"); e2.put("C", "1.2"); e2.put("plan_epandage", "true");
+
+        StringWriter w = new StringWriter();
+        codec.write(w, ds, List.of(e1, e2));
+        String out = w.toString();
+
+        assertTrue(out.contains("nom;fumier;urea"), "en-tête reconstruite : " + out);
+        assertTrue(out.contains("plan_epandage;false;true"),
+                "la ligne non déclarée doit être préservée : " + out);
+        assertEquals(3, out.trim().lines().count(), "3 lignes : nom + C + plan_epandage");
+    }
+
     private ByteArrayInputStream in(String s) {
         return new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8));
     }

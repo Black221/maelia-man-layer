@@ -16,6 +16,8 @@ public record ParameterSpecUpsertRequest(
         String visibleIf,
         String enabledIf,
         String optionsDataSpec,
+        String optionsColumn,
+        String optionsSource,
         boolean advanced,
         int order
 ) {}

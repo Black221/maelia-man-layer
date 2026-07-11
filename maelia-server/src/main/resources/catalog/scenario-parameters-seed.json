@@ -156,7 +156,8 @@
       "advanced": false,
       "order": 50,
       "enabledIf": "executerModeleSurUneZH == true",
-      "optionsDataSpec": "hydro.zonesHydrographiques.ZH"
+      "optionsDataSpec": "hydro.zonesHydrographiques.ZH",
+      "optionsColumn": "ID_ZH"
     },
     {
       "gamlName": "executerUnSeulAgriculteur",
@@ -182,7 +183,8 @@
       "advanced": false,
       "order": 70,
       "enabledIf": "executerUnSeulAgriculteur == true",
-      "optionsDataSpec": "agri.agriculteurs.exploitations"
+      "optionsDataSpec": "agri.agriculteurs.exploitations",
+      "optionsColumn": "ID_EXPL"
     },
     {
       "gamlName": "executerSurEnsembleExploit",
@@ -211,7 +213,8 @@
       "advanced": false,
       "order": 90,
       "enabledIf": "executerSurEnsembleExploit == true",
-      "optionsDataSpec": "agri.agriculteurs.exploitations"
+      "optionsDataSpec": "agri.agriculteurs.exploitations",
+      "optionsColumn": "ID_EXPL"
     },
     {
       "gamlName": "executerUneSeuleParcelle",
@@ -237,7 +240,8 @@
       "advanced": false,
       "order": 110,
       "enabledIf": "executerUneSeuleParcelle == true",
-      "optionsDataSpec": "agri.ilots.parcelles"
+      "optionsDataSpec": "agri.ilots.parcelles",
+      "optionsColumn": "ID_PARCELL"
     },
     {
       "gamlName": "nomScenarioClimatique",
@@ -279,7 +283,8 @@
       "advanced": false,
       "order": 140,
       "enabledIf": "utiliserMemeDonnesMeteoPartout == true",
-      "optionsDataSpec": "commun.meteo.polygonesMeteoFrance"
+      "optionsDataSpec": "commun.meteo.polygonesMeteoFrance",
+      "optionsColumn": "ID_PDG"
     },
     {
       "gamlName": "verboseMode",
@@ -712,7 +717,9 @@
       "allowedValues": null,
       "visibleIf": null,
       "advanced": false,
-      "order": 190
+      "order": 190,
+      "optionsDataSpec": "agri.marcheAgricole.prixVentes",
+      "optionsSource": "INSTANCE_KEYS"
     },
     {
       "gamlName": "scenarioDePrixPrincipal",
@@ -724,7 +731,9 @@
       "allowedValues": null,
       "visibleIf": null,
       "advanced": false,
-      "order": 200
+      "order": 200,
+      "optionsDataSpec": "agri.marcheAgricole.prixVentes",
+      "optionsSource": "INSTANCE_KEYS"
     },
     {
       "gamlName": "PREFIXE_CI",
@@ -844,7 +853,10 @@
       "allowedValues": null,
       "visibleIf": null,
       "advanced": false,
-      "order": 300
+      "order": 300,
+      "optionsDataSpec": "commun.typesDeSol.typeDeSolParZH",
+      "optionsColumn": "ZONE_PEDO",
+      "enabledIf": "executerParcelleVirtuelle == true"
     },
     {
       "gamlName": "surfaceHectareForceParcelle",
@@ -1000,7 +1012,9 @@
       "allowedValues": null,
       "visibleIf": null,
       "advanced": false,
-      "order": 80
+      "order": 80,
+      "optionsDataSpec": "agri.agriculteurs.exploitations",
+      "optionsColumn": "ID_EXPL"
     },
     {
       "gamlName": "listParcellesASuivre",
@@ -1014,7 +1028,9 @@
       "allowedValues": null,
       "visibleIf": null,
       "advanced": false,
-      "order": 90
+      "order": 90,
+      "optionsDataSpec": "agri.ilots.parcelles",
+      "optionsColumn": "ID_PARCELL"
     },
     {
       "gamlName": "Assolement_SDC",
@@ -1160,7 +1176,9 @@
       "allowedValues": null,
       "visibleIf": null,
       "advanced": false,
-      "order": 120
+      "order": 120,
+      "optionsDataSpec": "agri.ilots.parcelles",
+      "optionsColumn": "ID_PARCELL"
     },
     {
       "gamlName": "aqYield_eva_trmax_trr_ITK_ZH",
@@ -1857,6 +1875,30 @@
       "visibleIf": null,
       "advanced": false,
       "order": 60
+    },
+    {
+      "gamlName": "Canaux",
+      "label": "Sortie Prelevements pour alimenter les canaux",
+      "group": "sorties.prelevements",
+      "type": "BOOLEAN",
+      "defaultValue": false,
+      "unit": null,
+      "allowedValues": null,
+      "visibleIf": null,
+      "advanced": true,
+      "order": 110
+    },
+    {
+      "gamlName": "sequences_a_optimiser",
+      "label": "Séquence(s) à optimiser (agricole)",
+      "group": "agricole",
+      "type": "STRING",
+      "defaultValue": "",
+      "unit": null,
+      "allowedValues": null,
+      "visibleIf": null,
+      "advanced": true,
+      "order": 400
     }
   ],
   "systemManaged": [

@@ -50,6 +50,14 @@ public class IncludesMaterializer {
     private String gamaWorkspace;
 
     /**
+     * Verrous par projet : sérialise l'écriture des includes d'un même projet. Ceinture et
+     * bretelles avec le refus d'un 2e run actif (LaunchRunService) — évite toute course sur
+     * {@code projects/{id}/includes/} si deux matérialisations du même projet se chevauchaient.
+     */
+    private final java.util.concurrent.ConcurrentHashMap<UUID, Object> projectLocks =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
      * Arborescence d'includes de référence (SHP + fichiers de base) copiée comme socle
      * avant d'écraser avec les données saisies. Vide = désactivé (seuls les CSV saisis sont écrits).
      */
@@ -74,6 +82,13 @@ public class IncludesMaterializer {
      * @return chemin racine de l'arborescence générée
      */
     public Path materialize(UUID projectId) throws IOException {
+        Object lock = projectLocks.computeIfAbsent(projectId, k -> new Object());
+        synchronized (lock) {
+            return materializeLocked(projectId);
+        }
+    }
+
+    private Path materializeLocked(UUID projectId) throws IOException {
         Path projectRoot = Paths.get(gamaWorkspace, "maelia", "projects", projectId.toString(), "includes");
         Files.createDirectories(projectRoot);
 

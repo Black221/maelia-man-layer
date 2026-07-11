@@ -36,4 +36,11 @@ public interface GamaSession extends AutoCloseable {
 
     /** Bloque jusqu'à la fin de la simulation ou le timeout. */
     void waitForEnd(long timeoutSeconds) throws Exception;
+
+    /**
+     * Attend un signal de fin pendant au plus {@code timeoutSeconds}.
+     * @return {@code true} si la simulation s'est terminée (signal reçu), {@code false} si le délai
+     *         s'est écoulé sans fin. Lève une exception si une erreur/fermeture a été détectée.
+     */
+    boolean awaitEnd(long timeoutSeconds) throws Exception;
 }

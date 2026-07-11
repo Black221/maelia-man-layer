@@ -56,7 +56,11 @@ public class CsvOrientationCodec {
                 .setDelimiter(delimiter)
                 .setIgnoreEmptyLines(true)
                 .setTrim(true);
-        if (header) builder.setHeader().setSkipHeaderRecord(true);
+        // Tolérance aux en-têtes MAELIA « imparfaits » : première colonne sans nom (clé de ligne
+        // implicite, ex. materiel.csv « ;SIJ;travail ») ou en-têtes dupliqués — sinon Commons CSV
+        // lève « A header name is missing » et fait échouer tout l'import.
+        if (header) builder.setHeader().setSkipHeaderRecord(true)
+                .setAllowMissingColumnNames(true).setAllowDuplicateHeaderNames(true);
 
         List<Map<String, Object>> records = new ArrayList<>();
         try (CSVParser parser = new CSVParser(reader, builder.build())) {
@@ -141,9 +145,18 @@ public class CsvOrientationCodec {
     private void writeTransposed(Writer writer, DataSpec spec, List<Map<String, Object>> records,
                                  List<String> labels, char delimiter) throws IOException {
         int start = spec.effectiveMatrixValueStartIndex();
+
+        // Union : champs déclarés au catalogue PUIS toute ligne présente dans les données mais
+        // NON déclarée (ordre du fichier préservé). Sans cela, une matrice dont le catalogue est
+        // incomplet perd des lignes à la réécriture — ex. Engrais 'plan_epandage' absent des
+        // matrix.parameters : la matrice réécrite avait 34 lignes au lieu de 35, GAMA indexait
+        // hors bornes (IndexOutOfBoundsException) et le serveur crashait à l'initialisation.
+        java.util.LinkedHashSet<String> allLabels = new java.util.LinkedHashSet<>(labels);
+        for (Map<String, Object> record : records) allLabels.addAll(record.keySet());
+
         CSVFormat fmt = CSVFormat.DEFAULT.builder().setDelimiter(delimiter).build();
         try (CSVPrinter printer = new CSVPrinter(writer, fmt)) {
-            for (String label : labels) {
+            for (String label : allLabels) {
                 List<Object> line = new ArrayList<>();
                 line.add(label);
                 // colonnes méta entre la clé et les valeurs (non capturées dans le modèle normalisé)

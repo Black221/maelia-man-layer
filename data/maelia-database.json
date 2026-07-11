@@ -1,6 +1,6 @@
 {
   "$schema": "maelia-database-seed/v1",
-  "studyArea": "garonne-amont",
+  "studyArea": "ferlo-sine",
   "sampleDataset": "SASSEME V1 (includes_sassemeV1)",
   "generatedAt": "2026-06-28",
   "source": "Catalogue MAELIA complet, champs derives de MAELIA_Schema_Donnees.xlsx, grounding sur data/includes_sassemeV1.",
@@ -28,16 +28,18 @@
       "hydrographique",
       "normatif",
       "usages",
-      "barrage"
+      "barrage",
+      "filieres"
     ]
   },
   "modules": {
     "COMMUN": 12,
     "AGRICOLE": 26,
     "NORMATIF": 10,
-    "HYDROGRAPHIQUE": 23
+    "HYDROGRAPHIQUE": 24,
+    "FILIERES": 5
   },
-  "datasetCount": 71,
+  "datasetCount": 77,
   "groundedCount": 14,
   "groundedIds": [
     "commun.typesDeSol.typeDeSolParZH",
@@ -56,20 +58,13 @@
     "hydro.zonesHydrographiques.donneesMNT_ZH"
   ],
   "pendingIds": [
-    "commun.communes.departement",
     "agri.culture.matriceDistanceCulturale",
-    "agri.marcheAgricole.redevanceEau",
     "agri.marcheAgricole.chargesFixesAccesRessourceIrrigation",
     "agri.marcheAgricole.rendementsObservesAnterieur",
     "norm.uniteDeGestion.VP_historique",
     "norm.pointsDeReference.matriceDebitReelPointDOE",
-    "norm.canaux.restrictionsDebitCanaux",
     "hydro.zonesHydrographiques.zhDebitForce",
-    "hydro.troncons.tronconsParZH",
-    "hydro.troncons.tronconsPrincipauxParZH",
-    "hydro.equipements.volumeRefAnnuelIND",
-    "hydro.equipements.rjAEP",
-    "hydro.equipements.rjI"
+    "hydro.equipements.volumeRefAnnuelIND"
   ],
   "dataSpecs": [
     {
@@ -830,8 +825,17 @@
       "multiInstance": false,
       "saisieMode": "MAP",
       "description": "Departements.",
-      "fieldsStatus": "PENDING",
-      "fields": []
+      "fieldsStatus": "VERIFIED_PARTIAL",
+      "fields": [
+        {
+          "label": "CODE_DEPT",
+          "infoType": "String",
+          "unit": null,
+          "required": true,
+          "referencesDataSpec": null,
+          "description": "Code du departement (INSEE)."
+        }
+      ]
     },
     {
       "id": "commun.communes.resultatsEDEM",
@@ -1383,24 +1387,212 @@
           "description": "Coefficient de forme de la fonction de production (a dans AqYield)"
         },
         {
-          "position": 19,
-          "label": "ALPHA*",
+          "label": "ALPHA1",
           "infoType": "Double",
-          "unit": "variable",
+          "unit": null,
           "required": false,
           "referencesDataSpec": null,
-          "listSeparator": "|",
-          "description": "Colonnes 19-28 : courbe de Kc (modele Simple)"
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
         },
         {
-          "position": 29,
-          "label": "KC*",
+          "label": "ALPHA2",
           "infoType": "Double",
-          "unit": "variable",
+          "unit": null,
           "required": false,
           "referencesDataSpec": null,
-          "listSeparator": "|",
-          "description": "Colonnes 29-44 : courbe de Kc (modele Simple)"
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "ALPHA3",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "ALPHA4",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "ALPHA5",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "ALPHA6",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "ALPHA7",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "ALPHA8",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "ALPHA9",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "ALPHA10",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "KC1",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "KC2",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "KC3",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "KC4",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "KC5",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "KC6",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "KC7",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "KC8",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "KC9",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "KC10",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "KC11",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "KC12",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "KC13",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "KC14",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "KC15",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
+        },
+        {
+          "label": "KC16",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Element de calcul de la courbe Kc (modele de culture 'simple', non necessaire pour AqYield)."
         },
         {
           "position": 45,
@@ -1959,7 +2151,8 @@
           "eqCO2_MinK",
           "eqCO2_PRO",
           "CoutT",
-          "QuantiteDispoAnnuelleT"
+          "QuantiteDispoAnnuelleT",
+          "plan_epandage"
         ],
         "entities": [
           "boue urbaine liquide",
@@ -2703,12 +2896,32 @@
       "generation": "MANUAL",
       "required": false,
       "requiredIf": "module.agricole == true",
-      "temporalResolution": "NONE",
+      "temporalResolution": "YEAR",
       "multiInstance": false,
       "saisieMode": "GRID",
       "description": "Redevance sur l'eau.",
-      "fieldsStatus": "PENDING",
-      "fields": []
+      "fieldsStatus": "VERIFIED_PARTIAL",
+      "fields": [
+        {
+          "position": 0,
+          "label": "source",
+          "infoType": "String",
+          "unit": null,
+          "required": true,
+          "referencesDataSpec": null,
+          "allowedValues": "NAPP|SURF|RET|CAN",
+          "description": "Nature de la ressource."
+        },
+        {
+          "position": 1,
+          "label": "taxe[annee]",
+          "infoType": "Double",
+          "unit": "euros/m3",
+          "required": true,
+          "referencesDataSpec": null,
+          "description": "Taxe (redevance) sur l'eau brute par annee (colonnes suivantes)."
+        }
+      ]
     },
     {
       "id": "agri.marcheAgricole.chargesDePassage",
@@ -3361,8 +3574,50 @@
       "multiInstance": false,
       "saisieMode": "GRID",
       "description": "Restrictions de debit specifiques aux canaux.",
-      "fieldsStatus": "PENDING",
-      "fields": [],
+      "fieldsStatus": "VERIFIED_PARTIAL",
+      "fields": [
+        {
+          "label": "Nom_Canal",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Nom du canal (non utilise par MAELIA, aide a la saisie)."
+        },
+        {
+          "label": "ID_Canal",
+          "infoType": "String",
+          "unit": null,
+          "required": true,
+          "referencesDataSpec": "hydro.canaux.canaux_csv",
+          "description": "Identifiant du canal."
+        },
+        {
+          "label": "NiveauRestriction",
+          "infoType": "Integer",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "allowedValues": "1|2|3|4",
+          "description": "Niveau de la restriction."
+        },
+        {
+          "label": "debitMaxFloat",
+          "infoType": "Double",
+          "unit": "m3/s",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Limitation du debit de prelevement pour remplir le canal (plusieurs BVe -> valeurs separees)."
+        },
+        {
+          "label": "LimitationSortieCanal",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Fraction de l'eau du canal consideree par les points de rejet 'canal' (1=tout relache, 0=rien)."
+        }
+      ],
       "dependsOn": [
         "hydro.canaux.canaux_csv"
       ]
@@ -3380,7 +3635,7 @@
       "multiInstance": false,
       "saisieMode": "MAP",
       "description": "Bassins versants elementaires (BVe).",
-      "fieldsStatus": "VERIFIED",
+      "fieldsStatus": "VERIFIED_PARTIAL",
       "fields": [
         {
           "label": "ID_ZH",
@@ -3392,6 +3647,38 @@
           "samples": [
             "1"
           ]
+        },
+        {
+          "label": "ID_ND_EXUT",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": "hydro.zonesHydrographiques.ZH",
+          "description": "Identifiant du BVe dans lequel le BVe considere se jette. Decrit le chainage amont-aval (arbre d'ecoulement entre les BVe)."
+        },
+        {
+          "label": "EU_CD",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Identifiant de la masse d'eau elementaire majoritaire du BVe (optionnel, sorties par masse d'eau des agences)."
+        },
+        {
+          "label": "EU_CD_exut",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Identifiant de la masse d'eau contenant l'exutoire du BVe (optionnel)."
+        },
+        {
+          "label": "PERCENTAGE",
+          "infoType": "Double",
+          "unit": "%",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Pourcentage du BVe reellement rattache a la masse d'eau elementaire (optionnel)."
         }
       ],
       "rowCount": 1,
@@ -3676,8 +3963,17 @@
       "multiInstance": false,
       "saisieMode": "MAP",
       "description": "Tronçons hydrographiques par BVe (BD CARTHAGE).",
-      "fieldsStatus": "PENDING",
-      "fields": [],
+      "fieldsStatus": "VERIFIED_PARTIAL",
+      "fields": [
+        {
+          "label": "ARCID",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": "hydro.zonesHydrographiques.ZH",
+          "description": "Identifiant de la ressource = identifiant du BVe (CODE_HYDRO / ARCID)."
+        }
+      ],
       "dependsOn": [
         "hydro.zonesHydrographiques.ZH"
       ]
@@ -3695,8 +3991,17 @@
       "multiInstance": false,
       "saisieMode": "MAP",
       "description": "Tronçon principal par BVe (routage SWAT).",
-      "fieldsStatus": "PENDING",
-      "fields": [],
+      "fieldsStatus": "VERIFIED_PARTIAL",
+      "fields": [
+        {
+          "label": "ARCID",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": "hydro.zonesHydrographiques.ZH",
+          "description": "Identifiant de la ressource = identifiant du BVe (CODE_HYDRO / ARCID)."
+        }
+      ],
       "dependsOn": [
         "hydro.troncons.tronconsParZH"
       ]
@@ -3888,7 +4193,7 @@
       "multiInstance": false,
       "saisieMode": "MAP",
       "description": "Retenues collinaires par BVe (BD TOPO/IGN).",
-      "fieldsStatus": "VERIFIED",
+      "fieldsStatus": "VERIFIED_PARTIAL",
       "fields": [
         {
           "label": "ID_RESSOUR",
@@ -3963,6 +4268,14 @@
           "required": false,
           "referencesDataSpec": null,
           "description": "Numero d'ordre de la retenue (cours d'eau principal)"
+        },
+        {
+          "label": "TOPONYME",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Toponyme de la retenue (optionnel, spatialisation des points de prelevement)."
         }
       ]
     },
@@ -4260,7 +4573,7 @@
       "multiInstance": false,
       "saisieMode": "MAP",
       "description": "Points de prelevement irrigation.",
-      "fieldsStatus": "VERIFIED",
+      "fieldsStatus": "VERIFIED_PARTIAL",
       "fields": [
         {
           "label": "ID_EQU",
@@ -4283,6 +4596,87 @@
           "unit": null,
           "required": true,
           "description": "Importance du point dans la zone"
+        },
+        {
+          "label": "ID_RESS_ZH",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "ID ressource en eau objet du prelevement."
+        },
+        {
+          "label": "ID_ZH",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": "hydro.zonesHydrographiques.ZH",
+          "description": "Identifiant unique du BVe."
+        },
+        {
+          "label": "NATURE",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "allowedValues": "NAPP|SURF|RET",
+          "description": "Type de ressource objet du prelevement."
+        },
+        {
+          "label": "VOL_AGENCE",
+          "infoType": "Double",
+          "unit": "m3/an",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Volume moyen estime par l'agence."
+        },
+        {
+          "label": "NOM_ASA",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Nom de l'ASA (optionnel, lien exploitation-point de prelevement)."
+        },
+        {
+          "label": "ID_ASA",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Identifiant ASA (optionnel)."
+        },
+        {
+          "label": "CODE_IRRIG",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Code du preleveur (optionnel)."
+        },
+        {
+          "label": "ID_IRRIG",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Identifiant du preleveur (optionnel)."
+        },
+        {
+          "label": "VOLUME_AUT",
+          "infoType": "Integer",
+          "unit": "m3",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Quota de la derniere annee (optionnel)."
+        },
+        {
+          "label": "rssce_NOM",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Nom de la ressource (optionnel). Si contient 'canal' -> ressource de type CAN."
         }
       ]
     },
@@ -4299,7 +4693,7 @@
       "multiInstance": false,
       "saisieMode": "MAP",
       "description": "Points de prelevement AEP.",
-      "fieldsStatus": "VERIFIED",
+      "fieldsStatus": "VERIFIED_PARTIAL",
       "fields": [
         {
           "label": "ID_EQU",
@@ -4349,6 +4743,46 @@
           "referencesDataSpec": null,
           "allowedValues": "NAPP|SURF|RET",
           "description": "Nature de la ressource prelevee"
+        },
+        {
+          "label": "ID_ZH",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": "hydro.zonesHydrographiques.ZH",
+          "description": "Identifiant unique du BVe."
+        },
+        {
+          "label": "VOL_AGENCE",
+          "infoType": "Double",
+          "unit": "m3/an",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Volume moyen estime par l'agence."
+        },
+        {
+          "label": "TOPONYME",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Toponyme de la ressource (optionnel, non utilise par MAELIA, spatialisation)."
+        },
+        {
+          "label": "cours_eau",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "ID du cours d'eau pour prelevement/rejet (optionnel, non utilise)."
+        },
+        {
+          "label": "syst_aqui",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "ID ressource en eau pour prelevements en aquifere (optionnel, non utilise)."
         }
       ]
     },
@@ -4365,7 +4799,7 @@
       "multiInstance": false,
       "saisieMode": "MAP",
       "description": "Points de prelevement industriel.",
-      "fieldsStatus": "VERIFIED",
+      "fieldsStatus": "VERIFIED_PARTIAL",
       "fields": [
         {
           "label": "ID_EQU",
@@ -4415,6 +4849,46 @@
           "referencesDataSpec": null,
           "allowedValues": "NAPP|SURF|RET",
           "description": "Nature de la ressource prelevee"
+        },
+        {
+          "label": "ID_ZH",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": "hydro.zonesHydrographiques.ZH",
+          "description": "Identifiant unique du BVe."
+        },
+        {
+          "label": "VOL_AGENCE",
+          "infoType": "Double",
+          "unit": "m3/an",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Volume moyen estime par l'agence."
+        },
+        {
+          "label": "TOPONYME",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Toponyme de la ressource (optionnel, non utilise par MAELIA, spatialisation)."
+        },
+        {
+          "label": "cours_eau",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "ID du cours d'eau pour prelevement/rejet (optionnel, non utilise)."
+        },
+        {
+          "label": "syst_aqui",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "ID ressource en eau pour prelevements en aquifere (optionnel, non utilise)."
         }
       ]
     },
@@ -4450,8 +4924,66 @@
       "multiInstance": false,
       "saisieMode": "MAP",
       "description": "Points de rejet AEP.",
-      "fieldsStatus": "PENDING",
-      "fields": [],
+      "fieldsStatus": "VERIFIED_PARTIAL",
+      "fields": [
+        {
+          "label": "ID_EQU",
+          "infoType": "String",
+          "unit": null,
+          "required": true,
+          "referencesDataSpec": null,
+          "description": "Identifiant de l'equipement de rejet."
+        },
+        {
+          "label": "ID_RESS_ZH",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "ID ressource en eau objet du rejet."
+        },
+        {
+          "label": "ID_ZH",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": "hydro.zonesHydrographiques.ZH",
+          "description": "Identifiant unique du BVe."
+        },
+        {
+          "label": "TAUX",
+          "infoType": "Double",
+          "unit": "%",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Importance du point dans la zone d'etude."
+        },
+        {
+          "label": "NATURE",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "allowedValues": "NAPP|SURF|RET",
+          "description": "Type de ressource objet du rejet."
+        },
+        {
+          "label": "VOL_AGENCE",
+          "infoType": "Double",
+          "unit": "m3/an",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Volume moyen estime par l'agence (peut etre estime a partir du prelevement, cf. IND_RJI.csv)."
+        },
+        {
+          "label": "CODE_INSEE",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": "commun.communes.communesTrimUG",
+          "description": "Identifiant de la commune du point."
+        }
+      ],
       "dependsOn": [
         "hydro.zonesHydrographiques.ZH"
       ]
@@ -4469,11 +5001,692 @@
       "multiInstance": false,
       "saisieMode": "MAP",
       "description": "Points de rejet industriel.",
-      "fieldsStatus": "PENDING",
-      "fields": [],
+      "fieldsStatus": "VERIFIED_PARTIAL",
+      "fields": [
+        {
+          "label": "ID_EQU",
+          "infoType": "String",
+          "unit": null,
+          "required": true,
+          "referencesDataSpec": null,
+          "description": "Identifiant de l'equipement de rejet."
+        },
+        {
+          "label": "ID_RESS_ZH",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "ID ressource en eau objet du rejet."
+        },
+        {
+          "label": "ID_ZH",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": "hydro.zonesHydrographiques.ZH",
+          "description": "Identifiant unique du BVe."
+        },
+        {
+          "label": "TAUX",
+          "infoType": "Double",
+          "unit": "%",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Importance du point dans la zone d'etude."
+        },
+        {
+          "label": "NATURE",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "allowedValues": "NAPP|SURF|RET",
+          "description": "Type de ressource objet du rejet."
+        },
+        {
+          "label": "VOL_AGENCE",
+          "infoType": "Double",
+          "unit": "m3/an",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Volume moyen estime par l'agence (peut etre estime a partir du prelevement, cf. IND_RJI.csv)."
+        },
+        {
+          "label": "CODE_INSEE",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": "commun.communes.communesTrimUG",
+          "description": "Identifiant de la commune du point."
+        }
+      ],
       "dependsOn": [
         "hydro.zonesHydrographiques.ZH"
       ]
+    },
+    {
+      "id": "hydro.equipements.IND_RJI",
+      "module": "HYDROGRAPHIQUE",
+      "folder": "modeleHydrographique/equipements",
+      "fileName": "IND_RJI.csv",
+      "fileType": "CSV",
+      "generation": "MANUAL",
+      "required": false,
+      "requiredIf": "module.usages == true",
+      "temporalResolution": "NONE",
+      "multiInstance": false,
+      "saisieMode": "GRID",
+      "description": "Liens entre point de prelevement et point de rejet industriel (permet d'estimer VOL_AGENCE des rejets). Au moins 4 colonnes separees par ';'.",
+      "fieldsStatus": "VERIFIED_PARTIAL",
+      "fields": [
+        {
+          "position": 0,
+          "label": "idPointPrelevement",
+          "infoType": "String",
+          "unit": null,
+          "required": true,
+          "referencesDataSpec": "hydro.equipements.ppInd",
+          "description": "Identifiant du point de prelevement (1ere colonne)."
+        },
+        {
+          "position": 1,
+          "label": "col2",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Colonne intermediaire (non specifiee)."
+        },
+        {
+          "position": 2,
+          "label": "col3",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Colonne intermediaire (non specifiee)."
+        },
+        {
+          "position": 3,
+          "label": "idPointRejet",
+          "infoType": "String",
+          "unit": null,
+          "required": true,
+          "referencesDataSpec": "hydro.equipements.rjI",
+          "description": "Identifiant du point de rejet (4eme colonne)."
+        }
+      ],
+      "dependsOn": [
+        "hydro.equipements.ppInd",
+        "hydro.equipements.rjI"
+      ]
+    },
+    {
+      "id": "filieres.produits",
+      "module": "FILIERES",
+      "folder": "modeleFilieres",
+      "fileName": "produits.csv",
+      "fileType": "CSV",
+      "generation": "MANUAL",
+      "required": false,
+      "requiredIf": "module.filieres == true",
+      "temporalResolution": "NONE",
+      "multiInstance": false,
+      "saisieMode": "GRID",
+      "description": "Produits entrants et sortants des unites de transformation (bruts et finis), definis par leurs proprietes.",
+      "fieldsStatus": "VERIFIED_PARTIAL",
+      "fields": [
+        {
+          "label": "Prix",
+          "infoType": "Double",
+          "unit": "euros/t",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Prix de vente du produit par unite."
+        },
+        {
+          "label": "coutTransportForfait",
+          "infoType": "Double",
+          "unit": "euros/t",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Cout de transport forfaitaire (independant de la distance)."
+        },
+        {
+          "label": "coutTransportKm",
+          "infoType": "Double",
+          "unit": "euros/t/km",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Cout de transport au km."
+        },
+        {
+          "label": "coutEpandage",
+          "infoType": "Double",
+          "unit": "euros/t",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Prix d'epandage."
+        },
+        {
+          "label": "partMS",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Teneur en matiere seche dans le produit brut (0 a 1)."
+        },
+        {
+          "label": "partMO",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Teneur en matiere organique dans le produit brut (0 a 1)."
+        },
+        {
+          "label": "N",
+          "infoType": "Double",
+          "unit": "kg/t brut",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Teneur en azote."
+        },
+        {
+          "label": "P",
+          "infoType": "Double",
+          "unit": "kg/t brut",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Teneur en phosphore."
+        },
+        {
+          "label": "K",
+          "infoType": "Double",
+          "unit": "kg/t brut",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Teneur en potassium."
+        },
+        {
+          "label": "Mg",
+          "infoType": "Double",
+          "unit": "kg/t brut",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Teneur en magnesium."
+        },
+        {
+          "label": "Ca",
+          "infoType": "Double",
+          "unit": "kg/t brut",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Teneur en calcium."
+        },
+        {
+          "label": "Fe",
+          "infoType": "Double",
+          "unit": "kg/t brut",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Teneur de fer."
+        },
+        {
+          "label": "Mn",
+          "infoType": "Double",
+          "unit": "kg/t brut",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Teneur en manganese."
+        },
+        {
+          "label": "Zn",
+          "infoType": "Double",
+          "unit": "kg/t brut",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Teneur en zinc."
+        },
+        {
+          "label": "Cu",
+          "infoType": "Double",
+          "unit": "kg/t brut",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Teneur en cuivre."
+        },
+        {
+          "label": "Ni",
+          "infoType": "Double",
+          "unit": "kg/t brut",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Teneur en nickel."
+        },
+        {
+          "label": "Cr",
+          "infoType": "Double",
+          "unit": "kg/t brut",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Teneur en chrome."
+        },
+        {
+          "label": "Pb",
+          "infoType": "Double",
+          "unit": "kg/t brut",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Teneur en plomb."
+        },
+        {
+          "label": "Cd",
+          "infoType": "Double",
+          "unit": "kg/t brut",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Teneur en cadmium."
+        },
+        {
+          "label": "stockable",
+          "infoType": "Boolean",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "allowedValues": "0|1",
+          "description": "Le produit peut-il etre stocke."
+        }
+      ]
+    },
+    {
+      "id": "filieres.recettes",
+      "module": "FILIERES",
+      "folder": "modeleFilieres",
+      "fileName": "recettes.csv",
+      "fileType": "CSV",
+      "generation": "MANUAL",
+      "required": false,
+      "requiredIf": "module.filieres == true",
+      "temporalResolution": "NONE",
+      "multiInstance": false,
+      "saisieMode": "GRID",
+      "description": "Recettes des unites de transformation : elaboration des PRO et autres produits sortants.",
+      "fieldsStatus": "VERIFIED_PARTIAL",
+      "fields": [
+        {
+          "label": "categorieProduitSortie",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Type de produit de sortie apres transformation."
+        },
+        {
+          "label": "categorieProduitsEntree",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Liste des produits necessaires pour l'elaboration du produit de sortie."
+        },
+        {
+          "label": "proportionsProduitsEntree",
+          "infoType": "Double",
+          "unit": "%",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Quantite necessaire de chaque produit d'entree."
+        },
+        {
+          "label": "TauxAbattementN",
+          "infoType": "Double",
+          "unit": "%",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Perte relative d'azote lors de la transformation."
+        },
+        {
+          "label": "TauxAbattementC",
+          "infoType": "Double",
+          "unit": "%",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Perte relative de carbone lors de la transformation."
+        },
+        {
+          "label": "dureeTransformation",
+          "infoType": "Integer",
+          "unit": "jours",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Temps de transformation pour obtenir le produit de sortie."
+        },
+        {
+          "label": "quantiteMinimalePourDeclencher",
+          "infoType": "Integer",
+          "unit": "t brut",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Quantite minimale en stock pour declencher la transformation (0 = traitement direct)."
+        }
+      ]
+    },
+    {
+      "id": "filieres.routes",
+      "module": "FILIERES",
+      "folder": "modeleFilieres/shapes/misc",
+      "fileName": "routes.shp",
+      "fileType": "SHP",
+      "generation": "MANUAL",
+      "required": false,
+      "requiredIf": "module.filieres == true",
+      "temporalResolution": "NONE",
+      "multiInstance": false,
+      "saisieMode": "MAP",
+      "description": "Routes de la zone d'etude (transport des biomasses).",
+      "fieldsStatus": "VERIFIED_PARTIAL",
+      "fields": [
+        {
+          "label": "osm_id",
+          "infoType": "Integer",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Identifiant OpenStreetMap."
+        },
+        {
+          "label": "name",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Nom de la route."
+        },
+        {
+          "label": "type",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Type de route (secondaire, residentielle, service, pedestre...)."
+        },
+        {
+          "label": "oneway",
+          "infoType": "Boolean",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "allowedValues": "0|1",
+          "description": "Route a sens unique."
+        },
+        {
+          "label": "bridge",
+          "infoType": "Boolean",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "allowedValues": "0|1",
+          "description": "Presence de pont."
+        },
+        {
+          "label": "tunnel",
+          "infoType": "Boolean",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "allowedValues": "0|1",
+          "description": "Presence de tunnel."
+        },
+        {
+          "label": "maxspeed",
+          "infoType": "Integer",
+          "unit": "km/h",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Vitesse maximale autorisee."
+        },
+        {
+          "label": "DEPART",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Nom du departement de rattachement."
+        },
+        {
+          "label": "CODE_INSEE",
+          "infoType": "Integer",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": "commun.communes.communesTrimUG",
+          "description": "Numero INSEE de la commune."
+        }
+      ],
+      "geometry": true
+    },
+    {
+      "id": "filieres.UP",
+      "module": "FILIERES",
+      "folder": "modeleFilieres/shapes/up",
+      "fileName": "UP.shp",
+      "fileType": "SHP",
+      "generation": "MANUAL",
+      "required": false,
+      "requiredIf": "module.filieres == true",
+      "temporalResolution": "NONE",
+      "multiInstance": false,
+      "saisieMode": "MAP",
+      "description": "Unites de production (UP) du territoire d'etude.",
+      "fieldsStatus": "VERIFIED_PARTIAL",
+      "fields": [
+        {
+          "label": "IdUP",
+          "infoType": "Integer",
+          "unit": null,
+          "required": true,
+          "referencesDataSpec": null,
+          "description": "Numero unique."
+        },
+        {
+          "label": "Nom",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Nom de l'unite de production."
+        },
+        {
+          "label": "nom_commune",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Commune de l'UP."
+        },
+        {
+          "label": "unite_tran",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Unite de transformation rattachee a cette UP."
+        },
+        {
+          "label": "produit",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Nom du produit (ex. dechet_vert)."
+        },
+        {
+          "label": "traitement",
+          "infoType": "Boolean",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "allowedValues": "0|1",
+          "description": "Dechets pris en compte dans la simulation (0 = UP non lue)."
+        },
+        {
+          "label": "INSEE",
+          "infoType": "Integer",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": "commun.communes.communesTrimUG",
+          "description": "Numero INSEE de la commune."
+        },
+        {
+          "label": "quantite",
+          "infoType": "Integer",
+          "unit": "t",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Quantite totale produite (somme des quant_prod)."
+        },
+        {
+          "label": "capa_stock",
+          "infoType": "Double",
+          "unit": "t",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Capacite de stockage."
+        },
+        {
+          "label": "coef_vid_f",
+          "infoType": "Double",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Coefficient de vidange force."
+        },
+        {
+          "label": "date_prod",
+          "infoType": "Integer",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Date(s) de production."
+        },
+        {
+          "label": "quant_prod",
+          "infoType": "Double",
+          "unit": "t",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Quantite de production par periode de date_prod."
+        },
+        {
+          "label": "distance",
+          "infoType": "Double",
+          "unit": "km",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Distance entre UP et UT."
+        },
+        {
+          "label": "tr_direct",
+          "infoType": "Boolean",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "allowedValues": "0|1",
+          "description": "Trajet direct entre UP et UT."
+        }
+      ],
+      "geometry": true
+    },
+    {
+      "id": "filieres.UT",
+      "module": "FILIERES",
+      "folder": "modeleFilieres/shapes/ut",
+      "fileName": "UT.shp",
+      "fileType": "SHP",
+      "generation": "MANUAL",
+      "required": false,
+      "requiredIf": "module.filieres == true",
+      "temporalResolution": "NONE",
+      "multiInstance": false,
+      "saisieMode": "MAP",
+      "description": "Unites de transformation (UT) du territoire d'etude.",
+      "fieldsStatus": "VERIFIED_PARTIAL",
+      "fields": [
+        {
+          "label": "ID",
+          "infoType": "Integer",
+          "unit": null,
+          "required": true,
+          "referencesDataSpec": null,
+          "description": "Identifiant de l'unite de transformation."
+        },
+        {
+          "label": "NOM",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Nom de l'unite de transformation."
+        },
+        {
+          "label": "PROD_IN",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Produit d'entree."
+        },
+        {
+          "label": "CAP_PRD_IN",
+          "infoType": "Integer",
+          "unit": "t",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Capacite de production en entree."
+        },
+        {
+          "label": "CAPA_STOCK",
+          "infoType": "Integer",
+          "unit": "t",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Capacite de stockage."
+        },
+        {
+          "label": "COEF_VID_F",
+          "infoType": "Double",
+          "unit": "%",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Coefficient de vidange force."
+        },
+        {
+          "label": "FXMXPRODIN",
+          "infoType": "Integer",
+          "unit": "t",
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Flux maximal accepte (-1 = pas de limite)."
+        },
+        {
+          "label": "NOMPRODOUT",
+          "infoType": "String",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Nom du produit de sortie."
+        },
+        {
+          "label": "nbandmax",
+          "infoType": "Integer",
+          "unit": null,
+          "required": false,
+          "referencesDataSpec": null,
+          "description": "Compostage : nombre d'andain maximal."
+        }
+      ],
+      "geometry": true
     }
   ]
 }

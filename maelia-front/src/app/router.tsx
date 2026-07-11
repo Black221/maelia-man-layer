@@ -7,6 +7,7 @@ import { ProjectConfigSection } from '@/pages/project-detail/ProjectConfigSectio
 import { ProjectDataSection } from '@/pages/project-detail/ProjectDataSection'
 import { ProjectPreprocessingSection } from '@/pages/project-detail/ProjectPreprocessingSection'
 import { ProjectScenariosSection } from '@/pages/project-detail/ProjectScenariosSection'
+import { ProjectResultsSection } from '@/pages/project-results/ProjectResultsSection'
 import { DatasetPage } from '@/pages/dataset/DatasetPage'
 import { ScenarioCreatePage } from '@/pages/scenario-create/ScenarioCreatePage'
 import { ScenarioEditPage } from '@/pages/scenario-edit/ScenarioEditPage'
@@ -74,6 +75,7 @@ export const router = createBrowserRouter([
       { path: 'scenarios',                 element: <ProjectScenariosSection /> },
       { path: 'scenarios/new',             element: <ScenarioCreatePage /> },
       { path: 'scenarios/:scenarioId/edit', element: <ScenarioEditPage /> },
+      { path: 'results',             element: <ProjectResultsSection /> },
       { path: 'runs/:runId',         element: <RunMonitorPage /> },
     ],
   },

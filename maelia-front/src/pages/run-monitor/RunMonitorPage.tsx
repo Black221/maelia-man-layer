@@ -24,7 +24,16 @@ export function RunMonitorPage() {
   })
 
   const progress = useRunProgress(runId, (initialRun?.status as RunStatus) ?? 'EN_FILE')
-  const status = progress.status
+
+  // Le flux STOMP n'alimente que les runs EN DIRECT. Quand on revient sur un run déjà terminé
+  // (ou lancé avant l'ouverture de la page), aucun message live n'arrive et le statut resterait
+  // bloqué sur 'EN_FILE' avec un journal vide. On retombe alors sur le statut réellement chargé
+  // via getRunStatus : on privilégie le live dès qu'il a avancé, sinon la valeur persistée.
+  const status: RunStatus = progress.status !== 'EN_FILE'
+    ? progress.status
+    : ((initialRun?.status as RunStatus) ?? 'EN_FILE')
+  const error = progress.error ?? initialRun?.errorMessage ?? null
+  const cycle = progress.cycle || initialRun?.finalCycle || 0
   const isTerminal = status === 'TERMINE' || status === 'ECHEC' || status === 'ANNULE'
 
   const projectId = routeProjectId ?? initialRun?.projectId
@@ -43,19 +52,25 @@ export function RunMonitorPage() {
 
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-neutral-900">Exécution de simulation</h1>
+          <h1 className="text-xl font-semibold text-neutral-900">
+            {initialRun?.scenarioName ? (
+              <>Scénario : <span className="text-primary">{initialRun.scenarioName}</span></>
+            ) : (
+              'Exécution de simulation'
+            )}
+          </h1>
           <p className="mt-0.5 font-mono text-xs text-neutral-400 break-all">{runId}</p>
         </div>
         <RunStatusBadge status={status} />
       </div>
 
       <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm space-y-4">
-        <RunProgressBar status={status} cycle={progress.cycle} />
+        <RunProgressBar status={status} cycle={cycle} />
 
-        {progress.error && (
+        {(status === 'ECHEC' || error) && (
           <div className="flex items-start gap-2 rounded-lg border border-danger/30 bg-danger/5 p-3">
             <XCircle size={16} className="shrink-0 mt-0.5 text-danger" />
-            <p className="text-sm text-danger">{progress.error}</p>
+            <p className="text-sm text-danger">{error ?? 'La simulation a échoué.'}</p>
           </div>
         )}
 
@@ -64,7 +79,7 @@ export function RunMonitorPage() {
             <CheckCircle2 size={16} className="text-success shrink-0" />
             <p className="text-sm text-success">
               Simulation terminée — cycle final&nbsp;:&nbsp;
-              <span className="font-mono font-semibold">{progress.cycle}</span>
+              <span className="font-mono font-semibold">{cycle}</span>
             </p>
           </div>
         )}
@@ -79,7 +94,14 @@ export function RunMonitorPage() {
 
       <div className="space-y-2">
         <h2 className="text-sm font-medium text-neutral-700">Journal GAMA</h2>
-        <RunLog logs={progress.logs} />
+        {isTerminal && progress.logs.length === 0 ? (
+          <p className="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-500">
+            Le journal en direct n&apos;est disponible que pendant l&apos;exécution. Ce run est terminé —
+            consultez ses sorties ci-dessous ou dans l&apos;onglet «&nbsp;Résultats&nbsp;».
+          </p>
+        ) : (
+          <RunLog logs={progress.logs} />
+        )}
       </div>
 
       {status === 'TERMINE' && (

@@ -18,6 +18,8 @@ public record ParameterSpecDto(
         String visibleIf,
         String enabledIf,
         String optionsDataSpec,
+        String optionsColumn,
+        String optionsSource,
         boolean advanced,
         int order
 ) {
@@ -25,7 +27,8 @@ public record ParameterSpecDto(
         return new ParameterSpecDto(
                 s.gamlName(), s.label(), s.group(), s.type().name(),
                 coerce(s.type(), s.defaultValue()), s.unit(), s.allowedValues(),
-                s.visibleIf(), s.enabledIf(), s.optionsDataSpec(), s.advanced(), s.sortOrder());
+                s.visibleIf(), s.enabledIf(), s.optionsDataSpec(),
+                s.optionsColumn(), s.optionsSource(), s.advanced(), s.sortOrder());
     }
 
     private static Object coerce(ParamType type, String v) {

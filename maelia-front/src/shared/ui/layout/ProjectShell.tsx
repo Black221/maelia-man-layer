@@ -18,7 +18,7 @@ const sidebarItems: SidebarItem[] = [
   { to: 'data',          label: 'Données',       icon: Database,     matchSub: true },
   { to: 'preprocessing', label: 'Prétraitement', icon: Workflow },
   { to: 'scenarios',     label: 'Scénarios',     icon: FlaskConical },
-  { to: 'results',   label: 'Résultats',     icon: BarChart3,     disabled: true },
+  { to: 'results',       label: 'Résultats',     icon: BarChart3 },
 ]
 
 export function ProjectShell() {

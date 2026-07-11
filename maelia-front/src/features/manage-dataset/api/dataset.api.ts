@@ -66,3 +66,21 @@ export function getDataSpec(dataSpecId: string) {
     .get<DataSpec>(`/api/v1/dataspecs/${encodeURIComponent(dataSpecId)}`)
     .then((r) => r.data)
 }
+
+/**
+ * Valeurs proposées pour un sélecteur de paramètre : colonne d'un DataSpec, lue dans les données
+ * saisies du projet sinon dans le socle (opérationnel même sans upload ; supporte CSV et SHP/DBF).
+ * `column` omis = 1er champ (ID) ; `source` = COLUMN (défaut) | COLUMN_HEADERS | INSTANCE_KEYS.
+ */
+export function getReferentialOptions(
+  projectId: string,
+  dataSpec: string,
+  column?: string | null,
+  source?: string | null,
+) {
+  return apiClient
+    .get<string[]>(`/api/v1/projects/${projectId}/referential-options`, {
+      params: { dataSpec, column: column || undefined, source: source || undefined },
+    })
+    .then((r) => r.data)
+}

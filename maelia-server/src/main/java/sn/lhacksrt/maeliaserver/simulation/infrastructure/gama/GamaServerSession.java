@@ -3,6 +3,7 @@ package sn.lhacksrt.maeliaserver.simulation.infrastructure.gama;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.socket.CloseStatus;
 import sn.lhacksrt.maeliaserver.simulation.domain.port.out.GamaSession;
 import sn.lhacksrt.maeliaserver.simulation.infrastructure.gama.message.GamaMessage;
 import sn.lhacksrt.maeliaserver.simulation.infrastructure.gama.message.GamaMessageParser;
@@ -30,11 +31,35 @@ public class GamaServerSession implements GamaSession {
     private final AtomicReference<String> endError = new AtomicReference<>();
 
     private Consumer<String> externalListener;
+    /** Vrai quand close() est appelé volontairement (fin normale) : la fermeture WS qui suit
+     *  ne doit alors pas être interprétée comme un crash. */
+    private volatile boolean deliberateClose = false;
 
     GamaServerSession(GamaWebSocketHandler handler, GamaMessageParser parser) {
         this.handler = handler;
         this.parser = parser;
         handler.setMessageListener(this::handleRaw);
+        handler.setCloseListener(this::onConnectionClosed);
+    }
+
+    /**
+     * Fermeture inattendue de la connexion WebSocket (crash / arrêt brutal du serveur GAMA)
+     * pendant un run : on débloque immédiatement {@link #waitForEnd} avec une erreur, au lieu
+     * d'attendre le timeout (qui immobiliserait un consommateur RabbitMQ jusqu'à 30 min).
+     * No-op si la simulation est déjà terminée ou si close() a été appelé volontairement.
+     */
+    private void onConnectionClosed(CloseStatus status) {
+        if (deliberateClose || endLatch.getCount() == 0) return;
+        String reason = "Connexion GAMA fermée avant la fin de la simulation (code=" + status.getCode()
+                + (status.getReason() != null && !status.getReason().isBlank() ? " " + status.getReason() : "")
+                + ") — le serveur GAMA a probablement planté";
+        log.error("GAMA: {}", reason);
+        endError.compareAndSet(null, reason);
+        // Débloque aussi un load() encore en attente (crash pendant l'initialisation).
+        if (!loadFuture.isDone()) {
+            loadFuture.completeExceptionally(new IllegalStateException(reason));
+        }
+        endLatch.countDown();
     }
 
     @Override
@@ -121,7 +146,18 @@ public class GamaServerSession implements GamaSession {
     }
 
     @Override
+    public boolean awaitEnd(long timeoutSeconds) throws Exception {
+        boolean ended = endLatch.await(timeoutSeconds, TimeUnit.SECONDS);
+        String error = endError.get();
+        if (error != null) {
+            throw new IllegalStateException("GAMA simulation failed: " + error);
+        }
+        return ended;
+    }
+
+    @Override
     public void close() {
+        deliberateClose = true; // la fermeture WS qui suit est volontaire, pas un crash
         try {
             var session = handler.getSession();
             if (session != null && session.isOpen()) {
@@ -154,8 +190,10 @@ public class GamaServerSession implements GamaSession {
 
             // Les expériences MAELIA (type gui) ne signalent PAS toujours la fin/erreur par un
             // message structuré : une erreur d'init écrit "ERREUR LORS DE L'INITIALISATION" sur la
-            // console, et la fin normale écrit "FIN DE SIMULATION". Sans cette détection, un run
-            // cassé bloque waitForEnd (donc le consommateur RabbitMQ) jusqu'au timeout.
+            // console, la fin normale écrit "FIN DE SIMULATION", et une erreur d'EXÉCUTION (ex.
+            // "Division by zero" dans un reflex) est déversée sur la console (GamaRuntimeException)
+            // SANS message structuré. Sans cette détection, un run cassé en cours de route bloque
+            // waitForEnd (donc le consommateur RabbitMQ) jusqu'au timeout, et le run reste EN_COURS.
             case GamaMessage.SimulationOutput so -> {
                 String c = so.content();
                 if (c != null && c.contains("ERREUR LORS DE L'INITIALISATION")) {
@@ -163,10 +201,25 @@ public class GamaServerSession implements GamaSession {
                     endError.compareAndSet(null,
                             "Erreur lors de l'initialisation du modèle (fichier ou attribut manquant) — voir le journal GAMA");
                     endLatch.countDown();
+                } else if (isRuntimeErrorConsole(c)) {
+                    log.error("GAMA: erreur d'exécution détectée sur la console -> abandon du run : {}", firstLine(c));
+                    endError.compareAndSet(null,
+                            "Erreur d'exécution du modèle GAMA : " + firstLine(c) + " — voir le journal GAMA");
+                    endLatch.countDown();
                 } else if (c != null && c.contains("FIN DE SIMULATION")) {
                     log.info("GAMA: 'FIN DE SIMULATION' détectée (filet de sécurité d'arrêt)");
                     endLatch.countDown();
                 }
+            }
+
+            // Statut d'expérience passé en ERREUR (SimulationStatusError) : erreur d'exécution
+            // signalée de façon structurée par le serveur GAMA -> fatal.
+            case GamaMessage.StatusError se -> {
+                log.error("GAMA SimulationStatusError: {}", se.content());
+                endError.compareAndSet(null, "Erreur d'exécution du modèle GAMA : "
+                        + (se.content() != null && !se.content().isBlank() ? se.content() : "statut ERREUR")
+                        + " — voir le journal GAMA");
+                endLatch.countDown();
             }
 
             case GamaMessage.SimulationEnded se -> {
@@ -198,5 +251,28 @@ public class GamaServerSession implements GamaSession {
         if (externalListener != null) {
             externalListener.accept(raw);
         }
+    }
+
+    /**
+     * Détecte une erreur d'EXÉCUTION GAMA déversée sur la console (sans message structuré).
+     * Marqueurs robustes et non ambigus : la classe d'exception GAMA (présente dans toute trace)
+     * et les formulations d'erreur runtime. Volontairement conservateur pour ne pas confondre
+     * un simple {@code write} du modèle avec une vraie erreur.
+     */
+    private static boolean isRuntimeErrorConsole(String c) {
+        if (c == null || c.isBlank()) return false;
+        String low = c.toLowerCase();
+        return low.contains("gamaruntimeexception")
+                || low.contains("gama.core.runtime.exceptions")
+                || low.contains("runtime error");
+    }
+
+    /** 1re ligne non vide d'un contenu multi-lignes (pour un message d'erreur lisible). */
+    private static String firstLine(String c) {
+        if (c == null) return "";
+        for (String line : c.split("\\R")) {
+            if (!line.isBlank()) return line.trim();
+        }
+        return c.trim();
     }
 }

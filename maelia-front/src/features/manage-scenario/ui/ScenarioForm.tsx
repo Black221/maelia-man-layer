@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Loader2, ChevronRight, RotateCcw, Pencil, X } from 'lucide-react'
 import { Button } from '@/shared/ui'
@@ -11,7 +11,7 @@ import {
   getScenarioParameterGroups,
 } from '../api/scenario.api'
 import { isVisible } from '../model/visibleIf'
-import { useReferentialOptions } from '@/features/manage-dataset'
+import { useParamOptions } from '@/features/manage-dataset'
 
 interface ScenarioFormProps {
   projectId: string
@@ -65,11 +65,19 @@ export function ScenarioForm({ projectId, scenarioId, initialValues, onSaved, on
   })
 
   // Valeurs proposées issues des données du projet, pour les paramètres « select depuis données ».
-  const optionSpecIds = useMemo(
-    () => Array.from(new Set((specs ?? []).map((s) => s.optionsDataSpec).filter((v): v is string => !!v))),
+  // Clé = gamlName (une même DataSpec peut être proposée par colonne/source différentes).
+  const optionSpecs = useMemo(
+    () => (specs ?? [])
+      .filter((s) => !!s.optionsDataSpec)
+      .map((s) => ({
+        gamlName: s.gamlName,
+        optionsDataSpec: s.optionsDataSpec,
+        optionsColumn: s.optionsColumn,
+        optionsSource: s.optionsSource,
+      })),
     [specs],
   )
-  const { data: dataOptions } = useReferentialOptions(projectId, optionSpecIds)
+  const { data: dataOptions } = useParamOptions(projectId, optionSpecs)
 
   const byName = useMemo(() => {
     const m = new Map<string, ParameterSpec>()
@@ -395,7 +403,7 @@ function ParamFields({ specs, resolve, onChange, onReset, byName, dataOptions }:
         const def = byName.get(s.gamlName)?.defaultValue
         const overridden = isOverridden(value, def)
         const enabled = isVisible(s.enabledIf, resolve) // même grammaire que visibleIf
-        const options = s.optionsDataSpec ? dataOptions[s.optionsDataSpec] ?? [] : undefined
+        const options = s.optionsDataSpec ? dataOptions[s.gamlName] ?? [] : undefined
         const depLabel = dependencyLabel(s.enabledIf, byName)
 
         if (s.type === 'BOOLEAN') {
@@ -479,7 +487,6 @@ function ParamInput({
   ].join(' ')
 
   const hasOptions = !!options && options.length > 0
-  const listId = `opts-${spec.gamlName}`
 
   // Valeurs imposées par le catalogue (ENUM).
   if (spec.type === 'ENUM' && spec.allowedValues) {
@@ -521,28 +528,117 @@ function ParamInput({
   }
 
   if (spec.type === 'STRING_LIST') {
-    const arr = Array.isArray(value) ? value : []
-    return (
-      <>
-        <input
-          type="text"
-          value={arr.join(', ')}
+    const arr = (Array.isArray(value) ? value : []).map(String)
+    // Avec des valeurs proposées par les données : vraie multi-sélection par puces (chips).
+    if (hasOptions) {
+      return (
+        <TagMultiSelect
+          values={arr}
+          options={options!}
           disabled={disabled}
-          list={hasOptions ? listId : undefined}
-          onChange={(e) => onChange(e.target.value.split(',').map((s) => s.trim()).filter(Boolean))}
-          placeholder="valeurs séparées par des virgules"
-          className={cls}
+          overridden={overridden}
+          onChange={(next) => onChange(next)}
         />
-        {hasOptions && (
-          <datalist id={listId}>
-            {options!.map((v) => <option key={v} value={v} />)}
-          </datalist>
-        )}
-      </>
+      )
+    }
+    // Sans données de référence : saisie libre séparée par des virgules.
+    return (
+      <input
+        type="text"
+        value={arr.join(', ')}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.value.split(',').map((s) => s.trim()).filter(Boolean))}
+        placeholder="valeurs séparées par des virgules"
+        className={cls}
+      />
     )
   }
 
   return (
     <input type="text" value={String(value ?? '')} disabled={disabled} onChange={(e) => onChange(e.target.value)} className={cls} />
+  )
+}
+
+/**
+ * Multi-sélection par puces pour les STRING_LIST alimentées par les données (IDs de parcelles,
+ * d'exploitations, de ZH…). Ajout via liste déroulante filtrable (scalable pour de longues listes),
+ * retrait par la croix. Une valeur hors liste reste saisissable (Entrée) — tolérance aux IDs absents.
+ */
+function TagMultiSelect({
+  values,
+  options,
+  disabled,
+  overridden,
+  onChange,
+}: {
+  values: string[]
+  options: string[]
+  disabled?: boolean
+  overridden?: boolean
+  onChange: (v: string[]) => void
+}) {
+  const [draft, setDraft] = useState('')
+  const listId = useId()
+  const available = options.filter((o) => !values.includes(o))
+
+  const add = (raw: string) => {
+    const v = raw.trim()
+    setDraft('')
+    if (!v || values.includes(v)) return
+    onChange([...values, v])
+  }
+  const remove = (v: string) => onChange(values.filter((x) => x !== v))
+
+  const wrap = [
+    'w-full rounded-lg border px-2 py-1.5 flex flex-wrap items-center gap-1 min-h-[2.25rem] transition-colors',
+    disabled
+      ? 'border-neutral-200 bg-neutral-100 cursor-not-allowed'
+      : overridden
+        ? 'border-primary-300 bg-primary-50/40'
+        : 'border-neutral-200 bg-white',
+  ].join(' ')
+
+  return (
+    <div className={wrap}>
+      {values.map((v) => (
+        <span
+          key={v}
+          className="inline-flex items-center gap-1 rounded-md bg-primary-100 text-primary-700 text-xs px-1.5 py-0.5"
+        >
+          {v}
+          {!disabled && (
+            <button type="button" onClick={() => remove(v)} className="hover:text-danger" title="Retirer">
+              <X size={11} />
+            </button>
+          )}
+        </span>
+      ))}
+      {!disabled && (
+        <input
+          list={listId}
+          value={draft}
+          onChange={(e) => {
+            const val = e.target.value
+            if (options.includes(val)) add(val) // sélection dans la liste déroulante
+            else setDraft(val)
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              add(draft)
+            } else if (e.key === 'Backspace' && draft === '' && values.length > 0) {
+              remove(values[values.length - 1])
+            }
+          }}
+          placeholder={values.length ? 'ajouter…' : 'choisir ou saisir…'}
+          className="flex-1 min-w-[7rem] bg-transparent text-sm outline-none"
+        />
+      )}
+      <datalist id={listId}>
+        {available.map((o) => (
+          <option key={o} value={o} />
+        ))}
+      </datalist>
+    </div>
   )
 }

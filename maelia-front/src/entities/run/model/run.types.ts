@@ -12,6 +12,7 @@ export interface SimulationRun {
   experimentName: string
   projectId?: string | null
   scenarioId?: string | null
+  scenarioName?: string | null
   createdAt: string
   startedAt: string | null
   finishedAt: string | null

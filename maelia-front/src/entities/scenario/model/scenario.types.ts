@@ -31,6 +31,10 @@ export interface ParameterSpec {
   enabledIf: string | null
   /** Id d'un DataSpec dont le dataset projet fournit les valeurs proposées (select issu des données). */
   optionsDataSpec: string | null
+  /** Colonne du DataSpec à proposer (null = 1er champ / ID). Ex. ZONE_PEDO pour les sols. */
+  optionsColumn: string | null
+  /** Source des valeurs : null/COLUMN (défaut), COLUMN_HEADERS, INSTANCE_KEYS. */
+  optionsSource: string | null
   advanced: boolean
   order: number
 }

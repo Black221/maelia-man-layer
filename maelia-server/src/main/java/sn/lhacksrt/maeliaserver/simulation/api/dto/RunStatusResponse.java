@@ -13,6 +13,7 @@ public record RunStatusResponse(
         String experimentName,
         UUID projectId,
         UUID scenarioId,
+        String scenarioName,
         Instant createdAt,
         Instant startedAt,
         Instant finishedAt,
@@ -20,6 +21,11 @@ public record RunStatusResponse(
         String errorMessage
 ) {
     public static RunStatusResponse from(SimulationRun run) {
+        return from(run, null);
+    }
+
+    /** Variante enrichie du nom de scénario (jointure run↔scénario côté API). */
+    public static RunStatusResponse from(SimulationRun run, String scenarioName) {
         return new RunStatusResponse(
                 run.getId(),
                 run.getStatus(),
@@ -27,6 +33,7 @@ public record RunStatusResponse(
                 run.getExperimentName(),
                 run.getProjectId(),
                 run.getScenarioId(),
+                scenarioName,
                 run.getCreatedAt(),
                 run.getStartedAt(),
                 run.getFinishedAt(),

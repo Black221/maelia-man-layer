@@ -68,12 +68,12 @@ public class ResultRepositoryAdapter implements ResultRepository {
     }
 
     private ResultValueJpaEntity toEntity(ResultValue v) {
-        return new ResultValueJpaEntity(v.id(), v.runId(), v.indicator(), v.zone(),
-                v.date(), v.cycle(), v.value(), v.unit());
+        return new ResultValueJpaEntity(v.id(), v.runId(), v.indicator(), v.category(), v.zone(),
+                v.date(), v.cycle(), v.year(), v.value(), v.unit());
     }
 
     private ResultValue toDomain(ResultValueJpaEntity e) {
-        return new ResultValue(e.getId(), e.getRunId(), e.getIndicator(), e.getZone(),
-                e.getObsDate(), e.getCycle(), e.getValue(), e.getUnit());
+        return new ResultValue(e.getId(), e.getRunId(), e.getIndicator(), e.getCategory(), e.getZone(),
+                e.getObsDate(), e.getCycle(), e.getYear(), e.getValue(), e.getUnit());
     }
 }

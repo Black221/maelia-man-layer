@@ -4,4 +4,8 @@ export type {
   ResultSeries,
   OutputArtifact,
   ResultSummary,
+  IndicatorMeta,
+  YearPoint,
+  AggSeries,
+  RunDashboard,
 } from './model/result.types'

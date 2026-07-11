@@ -1,3 +1,6 @@
+# Documentation (mkdocs build output)
+docs/site/
+
 # IDE & Editor
 .vscode/
 .idea/
@@ -90,6 +93,10 @@ lerna-debug.log*
 # Runtime outputs (GAMA)
 dev/runs/
 main/log/
+# Sorties générées à chaque run : logs, projets matérialisés (UUID), workspaces Eclipse
+gama-workspace/maelia/models/main/log/
+gama-workspace/maelia/projects/
+gama-workspace/.workspace*
 *.trace
 *.test
 

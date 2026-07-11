@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
   Loader2,
@@ -10,11 +10,14 @@ import {
   Sparkles,
   ChevronDown,
   ListTree,
+  Files,
+  ChevronRight,
 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { queryKeys } from '@/shared/api'
 import { DatasetStatusBadge } from '@/entities/dataset'
-import { DatasetGrid, DatasetUpload, ShpUpload, getDataset, getDataSpec, useReferentialOptions } from '@/features/manage-dataset'
+import type { Dataset } from '@/entities/dataset'
+import { DatasetGrid, DatasetUpload, ShpUpload, getDataset, getDataSpec, useReferentialOptions, listProjectDatasets } from '@/features/manage-dataset'
 
 const MODULE_LABELS: Record<string, string> = {
   COMMUN:         'Commun',
@@ -25,6 +28,7 @@ const MODULE_LABELS: Record<string, string> = {
 
 export function DatasetPage() {
   const { datasetId, id: projectId } = useParams<{ datasetId: string; id: string }>()
+  const navigate = useNavigate()
   const [tab, setTab] = useState<'grid' | 'upload'>('grid')
   const [schemaOpen, setSchemaOpen] = useState(false)
 
@@ -67,6 +71,18 @@ export function DatasetPage() {
 
   const refSpecIds = fields.map((f) => f.referencesDataSpec).filter((v): v is string => !!v)
   const { data: referentialOptions } = useReferentialOptions(dataset?.projectId, refSpecIds)
+
+  // Types multi-instance (ex. AAAA.csv météo) : les fichiers réels sont des datasets d'instance
+  // (instanceKey = nom de fichier, ex. "2018.csv"). On les liste pour pouvoir les consulter.
+  const isMulti = !!dataSpec?.multiInstance
+  const { data: projectDatasets } = useQuery({
+    queryKey: ['project-datasets', dataset?.projectId],
+    queryFn: () => listProjectDatasets(dataset!.projectId),
+    enabled: isMulti && !!dataset?.projectId,
+  })
+  const instances = (projectDatasets ?? [])
+    .filter((d) => d.dataSpecId === dataset?.dataSpecId && !!d.instanceKey)
+    .sort((a, b) => (a.instanceKey ?? '').localeCompare(b.instanceKey ?? '', undefined, { numeric: true }))
 
   if (isLoading) {
     return (
@@ -158,6 +174,14 @@ export function DatasetPage() {
           </div>
         )}
       </header>
+
+      {/* Instances (types multi-fichiers, ex. météo AAAA.csv) : liste des fichiers importés. */}
+      {isMulti && (
+        <MultiInstanceList
+          instances={instances}
+          onOpen={(id) => navigate(`/projects/${projectId}/data/${id}`)}
+        />
+      )}
 
       {/* Schéma attendu (repliable) */}
       {fields.length > 0 && (
@@ -268,6 +292,48 @@ export function DatasetPage() {
       )}
       </>)}
     </div>
+  )
+}
+
+/** Liste des instances (fichiers) d'un type multi-instance, chacune ouvrable pour consultation. */
+function MultiInstanceList({
+  instances,
+  onOpen,
+}: {
+  instances: Dataset[]
+  onOpen: (id: string) => void
+}) {
+  return (
+    <section className="rounded-2xl border border-neutral-200 bg-white overflow-hidden">
+      <div className="flex items-center gap-2 px-5 py-3 border-b border-neutral-100">
+        <Files size={15} className="text-neutral-400" />
+        <h2 className="text-[13px] font-medium text-neutral-700">Fichiers importés</h2>
+        <span className="text-neutral-400 text-[12px] font-normal">· {instances.length}</span>
+      </div>
+      {instances.length === 0 ? (
+        <p className="px-5 py-6 text-[13px] text-neutral-500">
+          Aucun fichier importé pour l&apos;instant. Importez une archive ZIP contenant les fichiers
+          (ex.&nbsp;2018.csv, 2019.csv…) — ils apparaîtront ici, consultables un par un.
+        </p>
+      ) : (
+        <ul className="divide-y divide-neutral-50">
+          {instances.map((d) => (
+            <li key={d.id}>
+              <button
+                onClick={() => onOpen(d.id)}
+                className="w-full flex items-center gap-3 px-5 py-3 hover:bg-neutral-50 transition-colors text-left"
+              >
+                <Table2 size={15} className="text-neutral-400 shrink-0" />
+                <span className="font-mono text-[13px] text-neutral-800 flex-1 truncate">{d.instanceKey}</span>
+                <span className="text-[11px] text-neutral-400 tabular-nums">{d.recordCount} lignes</span>
+                <DatasetStatusBadge status={d.status} />
+                <ChevronRight size={15} className="text-neutral-300 shrink-0" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   )
 }
 

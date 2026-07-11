@@ -18,13 +18,22 @@ type Action =
   | { type: 'ERROR'; error: string }
   | { type: 'ENDED' }
 
+// MAELIA écrit énormément sur la console (une ligne par sauvegarde/cycle). On borne le journal
+// aux dernières lignes pour éviter la croissance non bornée du tableau (mémoire + re-render).
+const MAX_LOGS = 500
+
+function appendLog(logs: string[], message: string): string[] {
+  const next = [...logs, message]
+  return next.length > MAX_LOGS ? next.slice(next.length - MAX_LOGS) : next
+}
+
 function reducer(state: RunProgressState, action: Action): RunProgressState {
   switch (action.type) {
     case 'PROGRESS':
       return { ...state, cycle: action.cycle,
-        logs: action.message ? [...state.logs, action.message] : state.logs }
+        logs: action.message ? appendLog(state.logs, action.message) : state.logs }
     case 'LOG':
-      return { ...state, logs: [...state.logs, action.message] }
+      return { ...state, logs: appendLog(state.logs, action.message) }
     case 'STATUS':
       return { ...state, status: action.status }
     case 'ENDED':

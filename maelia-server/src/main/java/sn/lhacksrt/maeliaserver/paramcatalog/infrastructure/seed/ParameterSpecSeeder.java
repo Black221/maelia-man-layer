@@ -67,6 +67,8 @@ public class ParameterSpecSeeder {
                         nullable(p, "visibleIf"),
                         nullable(p, "enabledIf"),
                         nullable(p, "optionsDataSpec"),
+                        nullable(p, "optionsColumn"),
+                        nullable(p, "optionsSource"),
                         p.path("advanced").asBoolean(false),
                         p.path("order").asInt(0)));
             }

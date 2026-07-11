@@ -9,7 +9,6 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -28,6 +27,10 @@ public class GamaWebSocketHandler extends TextWebSocketHandler {
     private final CompletableFuture<Void> connectionFuture = new CompletableFuture<>();
     @Setter
     private Consumer<String> messageListener;
+    /** Notifié à la fermeture/erreur de la connexion (crash GAMA) — permet d'abandonner le run
+     *  immédiatement au lieu d'attendre le timeout. */
+    @Setter
+    private Consumer<CloseStatus> closeListener;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
@@ -50,12 +53,22 @@ public class GamaWebSocketHandler extends TextWebSocketHandler {
     public void handleTransportError(WebSocketSession session, Throwable exception) {
         log.error("GAMA transport error: {}", exception.getMessage(), exception);
         connectionFuture.completeExceptionally(exception);
+        notifyClosed(new CloseStatus(CloseStatus.SERVER_ERROR.getCode(),
+                "transport error: " + exception.getMessage()));
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-        log.warn("GAMA connection closed, code={} reason={}", Optional.of(status.getCode()), status.getReason());
+        log.warn("GAMA connection closed, code={} reason={}", status.getCode(), status.getReason());
         this.session = null;
+        notifyClosed(status);
+    }
+
+    private void notifyClosed(CloseStatus status) {
+        Consumer<CloseStatus> l = this.closeListener;
+        if (l != null) {
+            try { l.accept(status); } catch (Exception e) { log.warn("closeListener error: {}", e.getMessage()); }
+        }
     }
 
     public void sendCommand(String jsonCommand) throws Exception {

@@ -71,6 +71,8 @@ public class ParameterAdminService implements ParameterAdminUseCase {
                 blankToNull(req.visibleIf()),
                 blankToNull(req.enabledIf()),
                 blankToNull(req.optionsDataSpec()),
+                blankToNull(req.optionsColumn()),
+                blankToNull(req.optionsSource()),
                 req.advanced(),
                 req.order());
     }
