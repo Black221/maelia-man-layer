@@ -4,6 +4,18 @@
 
 services:
 
+  docs:
+    # Documentation de la plateforme (mkdocs-material). Le dossier ./docs contient
+    # mkdocs.yml + docs/ (contenu Markdown) + docs/stylesheets/extra.css (charte graphique).
+    image: squidfunk/mkdocs-material:9.7.0
+    working_dir: /docs
+    command: ["serve", "--dev-addr=0.0.0.0:8080"]
+    volumes:
+      - ./docs:/docs
+    ports:
+      - "8082:8080"
+
+
   db:
     image: postgis/postgis:16-3.4
     environment:
@@ -55,10 +67,13 @@ services:
       retries: 5
 
   gama-headless:
-    image: maelia-man-layer-gama-headless
     # Serveur headless GAMA en mode WebSocket sur le port 6868.
-    # L'image maelia-man-layer-gama-headless est une image Alpine+JDK21+GAMA buildée localement.
-    # Pour rebuild : placer un Dockerfile dans gama-headless/ et relancer docker compose build gama-headless.
+    # Image buildée localement à partir de l'officielle gamaplatform/gama (cf. gama-headless/Dockerfile) :
+    # même moteur, avec WORKDIR /workspace. Rebuild : docker compose build gama-headless.
+    build:
+      context: ./gama-headless
+      dockerfile: Dockerfile
+    image: maelia/gama:local
     command: ["-socket", "6868"]
     ports:
       - "6868:6868"
@@ -103,6 +118,11 @@ services:
 
   worker:
     # Même image que l'api, lancée avec le profil "worker" (consomme RabbitMQ, pilote GAMA).
+    # On répète le bloc build: pour que l'image soit construite localement chez tout le monde
+    # (Compose déduplique les builds qui ciblent le même tag, donc l'image n'est bâtie qu'une fois).
+    build:
+      context: ./maelia-server
+      dockerfile: Dockerfile
     image: maelia/backend:local
     environment:
       SPRING_PROFILES_ACTIVE: worker
